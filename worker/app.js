@@ -83,6 +83,21 @@
     const titleEl = document.getElementById('headerScreenTitle');
     if (titleEl) titleEl.textContent = titles[screenId] || 'Кабинет исполнителя';
 
+    const subCountEl = document.getElementById('headerSubCount');
+    if (subCountEl) {
+      const subtitles = {
+        home: `${(store.state.orders || []).length} доступных смен`,
+        my: 'История и активные смены',
+        payouts: 'Моментальные выплаты через СБП',
+        chats: 'Прямая связь с заказчиками',
+        friends: 'Совместные смены и напарники в Самаре',
+        profile: 'Допуски, курсы и настройки',
+        detail: 'Карточка смены',
+        course_player: 'Обучение и сертификация'
+      };
+      subCountEl.textContent = subtitles[screenId] || '';
+    }
+
     window.scrollTo({ top: 0, behavior: 'instant' });
     renderCurrentScreen();
   }
@@ -1878,41 +1893,96 @@
       return;
     }
 
+    function getDativeName(name) {
+      const first = (name || '').split(' ')[0];
+      if (first === 'Дмитрий') return 'Дмитрию';
+      if (first === 'Максим') return 'Максиму';
+      if (first === 'Артём') return 'Артёму';
+      if (first === 'Кирилл') return 'Кириллу';
+      if (first.endsWith('й')) return first.slice(0, -1) + 'ю';
+      if (first.endsWith('а')) return first.slice(0, -1) + 'е';
+      return first + 'у';
+    }
+
     listEl.innerHTML = withFriends.map(order => {
       const meta = store.getOrderSlotsMeta(order, store.state.currentUserId);
       const friend = meta.assignedFriends[0] || { name: 'Напарник' };
       const isAssigned = meta.isWorkerAssigned;
       const left = meta.left;
+      const hours = order.hours || 3;
+      const rawPrice = order.rawPrice || parseInt(String(order.price).replace(/\D/g, ''), 10) || 2400;
+      const hourlyRate = Math.round(rawPrice / hours);
+      const distKm = store.getOrderDistanceForWorker(order, workerState.radarHub);
+      const dativeName = getDativeName(friend.name);
+
+      let scaleBarsHtml = '';
+      for (let i = 0; i < meta.total; i++) {
+        const isFilled = i < meta.filled;
+        scaleBarsHtml += `<span class="slot-bar-pip ${isFilled ? 'filled' : 'empty'}"></span>`;
+      }
 
       return `
-        <article class="friends-shift-card">
-          <div class="friends-shift-photo">
-            <img src="${UI.getOrderPhotoUrl(order)}" alt="${UI.escapeHtml(order.title)}" loading="lazy">
-          </div>
-          <div class="friends-shift-content">
-            <div class="friends-shift-top">
-              <span class="friends-shift-badge">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>${UI.escapeHtml(friend.name)} уже в смене</span>
-              </span>
-              <span class="friends-shift-meta">${left > 0 ? `Свободно ${left} из ${meta.total} мест` : 'Все места заняты'}</span>
+        <article class="friends-shift-card" id="friendShift_${order.id}">
+          <div class="friends-shift-card-head">
+            <div class="friends-shift-thumb-wrap">
+              <img src="${UI.getOrderPhotoUrl(order)}" alt="${UI.escapeHtml(order.title)}" class="friends-shift-thumb" loading="lazy">
+              <span class="friends-shift-dist-pill">${distKm} км</span>
             </div>
-            <h4 class="friends-shift-name" onclick="window.Eluma.Worker.openOrderDrawer(${order.id})">${UI.escapeHtml(order.title)}</h4>
-            <div class="friends-shift-meta">
-              <span>${UI.escapeHtml(order.district)}</span> · <span>${UI.escapeHtml(order.time)}</span>
+            <div class="friends-shift-head-body">
+              <div class="friends-shift-badges-row">
+                <span class="friends-shift-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <span>${UI.escapeHtml(friend.name)} в смене</span>
+                </span>
+                <span class="friends-slots-pill ${left === 0 ? 'full' : ''}">
+                  ${left > 0 ? `${left} из ${meta.total} свободно` : 'Все места заняты'}
+                </span>
+              </div>
+              <h4 class="friends-shift-name" onclick="window.Eluma.Worker.openOrderDrawer(${order.id})">${UI.escapeHtml(order.title)}</h4>
+              <div class="friends-shift-customer-meta">
+                <span class="friends-shift-customer-name">${UI.escapeHtml(order.customerName)}</span>
+                <span class="friends-shift-sep">·</span>
+                <span class="friends-shift-rating">${UI.SVG_ICONS.star} ${UI.escapeHtml(order.customerRating || '4.95')}</span>
+              </div>
             </div>
           </div>
-          <div class="friends-shift-action">
-            <span class="unit-payout-amount">${UI.escapeHtml(order.price)}</span>
-            ${isAssigned ? `
-              <button type="button" class="btn-unit-apply applied" onclick="window.Eluma.Worker.openDetail(${order.id})">Вы записаны</button>
-            ` : (left > 0 ? `
-              <button type="button" class="btn btn-primary-cta btn-join-friend" onclick="window.Eluma.Worker.joinFriendShiftDirect(${order.id}, event)">
-                Присоединиться к ${UI.escapeHtml(friend.name.split(' ')[0])}
-              </button>
-            ` : `
-              <button type="button" class="btn btn-secondary-outline" disabled>Мест нет</button>
-            `)}
+
+          <div class="friends-shift-info-block">
+            <div class="friends-info-line">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>${UI.escapeHtml(order.district)}</span>
+            </div>
+            <div class="friends-info-line">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>${UI.escapeHtml(order.time)} (${hours} ч)</span>
+            </div>
+          </div>
+
+          <div class="friends-shift-slots-bar-wrap">
+            <div class="unit-slots-scale" title="Свободно ${left} из ${meta.total} мест">
+              ${scaleBarsHtml}
+            </div>
+            <span class="friends-slots-bar-label">
+              Напарник ${UI.escapeHtml(friend.name.split(' ')[0])} в бригаде
+            </span>
+          </div>
+
+          <div class="friends-shift-footer-row">
+            <div class="friends-shift-price-box">
+              <span class="friends-shift-price">${UI.escapeHtml(order.price)}</span>
+              <span class="friends-shift-rate">${hourlyRate} ₽/час</span>
+            </div>
+            <div class="friends-shift-btn-box">
+              ${isAssigned ? `
+                <button type="button" class="btn-unit-apply applied" onclick="window.Eluma.Worker.openDetail(${order.id})">Вы записаны</button>
+              ` : (left > 0 ? `
+                <button type="button" class="btn btn-primary-cta btn-join-friend" onclick="window.Eluma.Worker.joinFriendShiftDirect(${order.id}, event)">
+                  Присоединиться к ${UI.escapeHtml(dativeName)}
+                </button>
+              ` : `
+                <button type="button" class="btn btn-secondary-outline" disabled>Мест нет</button>
+              `)}
+            </div>
           </div>
         </article>
       `;
