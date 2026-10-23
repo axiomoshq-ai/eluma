@@ -3571,24 +3571,43 @@ textarea.form-control {
 
   .header-inner {
     flex-wrap: nowrap;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
   }
 
   .header-title-box {
     min-width: 0;
     flex: 1;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 
   .header-screen-title {
-    font-size: 15px;
+    font-size: 1.12rem;
+    font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.25;
+    color: var(--text-primary);
+    width: 100%;
   }
 
-  .header-geo-badge {
-    display: none;
+  .header-sub-count {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .header-geo-badge,
+  .header-location-sub {
+    display: none !important;
   }
 
   .header-actions {
@@ -3614,9 +3633,203 @@ textarea.form-control {
   }
 
   .app-body-content {
-    padding: 12px 10px calc(env(safe-area-inset-bottom, 0px) + 120px) 10px !important;
+    padding: 12px 10px calc(env(safe-area-inset-bottom, 0px) + 160px) 10px !important;
     overflow-x: hidden !important;
     max-width: 100vw !important;
+  }
+
+  .courses-catalog-section {
+    margin-bottom: 24px !important;
+  }
+
+  /* Slide-Over Drawer on mobile */
+  .slide-over-drawer {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    border: none !important;
+    transform: translateX(100%) !important;
+  }
+
+  .slide-over-drawer.active {
+    transform: translateX(0) !important;
+  }
+
+  .drawer-photo-banner {
+    height: 130px !important;
+  }
+
+  .drawer-body {
+    padding: 16px !important;
+    padding-bottom: 24px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .drawer-footer {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 12px)) 16px !important;
+  }
+
+  /* Dev floating pill mobile micro-capsule */
+  .eluma-dev-floating-pill,
+  .olksi-dev-floating-pill {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 74px) !important;
+    right: 8px !important;
+    height: 24px !important;
+    padding: 2px 6px !important;
+    gap: 3px !important;
+    opacity: 0.5 !important;
+    transform: scale(0.9) !important;
+    transform-origin: bottom right !important;
+  }
+
+  .eluma-dev-floating-pill:hover,
+  .eluma-dev-floating-pill:active,
+  .olksi-dev-floating-pill:hover,
+  .olksi-dev-floating-pill:active {
+    opacity: 0.95 !important;
+    transform: scale(1) !important;
+  }
+
+  .dev-role-switch-btn,
+  .dev-menu-toggle-btn {
+    height: 18px !important;
+    padding: 1px 5px !important;
+    font-size: 10px !important;
+  }
+
+  /* Co-Op screen on mobile */
+  .friends-dashboard-wrap {
+    padding: 12px 6px !important;
+  }
+
+  .friends-hero-card {
+    padding: 18px 16px !important;
+    gap: 16px !important;
+  }
+
+  .friends-hero-badge {
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+  }
+
+  .friends-hero-title {
+    font-size: 1.22rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .friends-hero-metrics {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .friends-metric-box {
+    min-width: 0 !important;
+    padding: 10px 12px !important;
+  }
+
+  .friends-metric-box.promo {
+    grid-column: 1 / -1 !important;
+    min-width: 0 !important;
+  }
+
+  .friends-hero-right {
+    width: 100% !important;
+  }
+
+  .friends-hero-right .btn {
+    width: 100% !important;
+  }
+
+  .friends-shifts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .friends-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Employer Task Card & Create on Mobile */
+  .emp-action-price-col {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid var(--border-subtle) !important;
+  }
+
+  .emp-action-price-col .unit-payout-box {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .emp-actions-btns {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .emp-actions-btns .btn-emp-action {
+    flex: 1 !important;
+    min-width: 90px !important;
+    justify-content: center !important;
+    padding: 6px 8px !important;
+    font-size: 11.5px !important;
+    white-space: nowrap !important;
+  }
+
+  .emp-tabs-bar {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .emp-tabs-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .emp-tab-chip {
+    flex-shrink: 0 !important;
+  }
+
+  .form-grid-2col {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .form-grid-3col {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .form-grid-3col > :first-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .form-actions-bar {
+    width: 100% !important;
+    margin-bottom: 30px !important;
+  }
+
+  .submit-order-btn {
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   .feed-top-toolbar {
