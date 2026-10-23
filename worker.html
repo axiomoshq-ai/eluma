@@ -69,6 +69,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>Чаты по заказам</span>
         </button>
+        <button type="button" class="d-nav-item" data-screen="friends" onclick="window.Eluma.Worker.navigate('friends')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Друзья и напарники</span>
+        </button>
         <button type="button" class="d-nav-item" data-screen="profile" onclick="window.Eluma.Worker.navigate('profile')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <span>Обучение и профиль</span>
@@ -142,7 +146,10 @@
               <div class="mp-top-search-bar">
                 <div class="search-input-box">
                   <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" id="workerSearchInput" class="search-input" placeholder="Поиск по названию смены, улице или заказчику в Самаре..." oninput="window.Eluma.Worker.setSearchQuery(this.value)">
+                  <input type="text" id="workerSearchInput" class="search-input" placeholder="Поиск смены, адреса или заказчика..." oninput="window.Eluma.Worker.setSearchQuery(this.value)">
+                  <button type="button" class="search-clear-btn" id="workerSearchClearBtn" onclick="window.Eluma.Worker.clearSearch()" title="Очистить поиск">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
 
                 <div class="filter-summary-line" id="workerFilterSummaryLine">
@@ -155,6 +162,8 @@
                     <option value="rate">По ставке (₽/ч ↓)</option>
                     <option value="price">По выплате (₽ ↓)</option>
                     <option value="urgent">Сначала срочные</option>
+                    <option value="slots">Сначала много мест</option>
+                    <option value="friends">Сначала с друзьями</option>
                   </select>
                   <button type="button" class="sort-dropdown-trigger" id="sortDropdownTrigger" onclick="window.Eluma.Worker.toggleSortDropdown(event)" aria-haspopup="listbox" aria-expanded="false" title="Сортировка смен">
                     <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="12" y2="12"/><line x1="4" y1="18" x2="8" y2="18"/><polyline points="15 15 18 18 21 15"/><line x1="18" y1="9" x2="18" y2="18"/></svg>
@@ -176,6 +185,14 @@
                     </div>
                     <div class="sort-dropdown-item" data-val="urgent" onclick="window.Eluma.Worker.selectSortOption('urgent', 'Сначала срочные')">
                       <span class="sort-item-text">Сначала срочные</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                    <div class="sort-dropdown-item" data-val="slots" onclick="window.Eluma.Worker.selectSortOption('slots', 'Сначала много мест')">
+                      <span class="sort-item-text">Сначала много мест</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                    <div class="sort-dropdown-item" data-val="friends" onclick="window.Eluma.Worker.selectSortOption('friends', 'Сначала с друзьями')">
+                      <span class="sort-item-text">Сначала с друзьями</span>
                       <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
                     </div>
                   </div>
@@ -254,8 +271,8 @@
                 <div class="mp-filter-group">
                   <span class="mp-group-title">Выплата за смену, ₽</span>
                   <div class="mp-price-inputs-row">
-                    <input type="number" id="filterMinPriceInput" class="mp-num-input" placeholder="От 1 500" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
-                    <input type="number" id="filterMaxPriceInput" class="mp-num-input" placeholder="До 5 000" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
+                    <input type="number" id="filterMinPrice" class="mp-num-input" placeholder="От 1 500" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
+                    <input type="number" id="filterMaxPrice" class="mp-num-input" placeholder="До 5 000" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
                   </div>
                   <span class="mp-group-sub">Ставка в час</span>
                   <div class="mp-segmented-row" id="rateFilterRow">
@@ -296,11 +313,28 @@
                       <span class="mp-check-label">Возможен торг (P2P)</span>
                     </label>
                     <label class="mp-check-row">
+                      <input type="checkbox" id="chkMultiSlots" onchange="window.Eluma.Worker.toggleFilterChip('multiSlots')">
+                      <span class="mp-check-custom"></span>
+                      <span class="mp-check-label">Бригады и смены от 2 человек</span>
+                    </label>
+                    <label class="mp-check-row">
+                      <input type="checkbox" id="chkFriendsInShift" onchange="window.Eluma.Worker.toggleFilterChip('friendsInShift')">
+                      <span class="mp-check-custom"></span>
+                      <span class="mp-check-label">Смены, где уже записаны друзья</span>
+                    </label>
+                    <label class="mp-check-row">
                       <input type="checkbox" id="chkOnlyBusiness" onchange="window.Eluma.Worker.toggleFilterChip('onlyBusiness')">
                       <span class="mp-check-custom"></span>
                       <span class="mp-check-label">Бизнес-заказчики</span>
                     </label>
                   </div>
+                </div>
+
+                <!-- Нижняя кнопка сброса фильтров -->
+                <div class="mp-filter-footer">
+                  <button type="button" class="btn btn-secondary-outline w-full mp-reset-btn" id="btnResetWorkerFilters" onclick="window.Eluma.Worker.resetFilters()">
+                    Сбросить все фильтры
+                  </button>
                 </div>
               </aside>
 
@@ -574,6 +608,69 @@
           <!-- 7. ЭКРАН: ИНТЕРАКТИВНЫЙ ПЛЕЕР КУРСА ДОПУСКА -->
           <section class="screen" id="scr-wrk-course_player"></section>
 
+          <!-- 8. ЭКРАН: ДРУЗЬЯ И НАПАРНИКИ (FRIENDS) -->
+          <section class="screen" id="scr-wrk-friends">
+            <div class="friends-dashboard-wrap">
+              <!-- Карточка-герой со статистикой Co-Op и реферальным кодом -->
+              <div class="friends-hero-card">
+                <div class="friends-hero-left">
+                  <div class="friends-hero-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Совместные смены в Самаре · Eluma Co-Op</span>
+                  </div>
+                  <h2 class="friends-hero-title">Выходите на смену вдвоём или бригадой</h2>
+                  <p class="friends-hero-desc">Работайте вместе с проверенными напарниками, повышайте рейтинг и делитесь сменами без риска штрафов.</p>
+                  <div class="friends-hero-metrics">
+                    <div class="friends-metric-box">
+                      <span class="friends-metric-num" id="metricCoOpShifts">11</span>
+                      <span class="friends-metric-lbl">Выполнено вместе</span>
+                    </div>
+                    <div class="friends-metric-box">
+                      <span class="friends-metric-num" id="metricActiveBuddies">4</span>
+                      <span class="friends-metric-lbl">Напарника в Самаре</span>
+                    </div>
+                    <div class="friends-metric-box promo">
+                      <div class="friends-ref-row">
+                        <code class="friends-ref-code" id="friendsRefCode">ELUMA-SAMARA-63</code>
+                        <button type="button" class="btn-copy-code" onclick="window.Eluma.Worker.copyReferralCode()" title="Скопировать код">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                      </div>
+                      <span class="friends-metric-lbl">Код приглашения (+500 ₽ обоим)</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="friends-hero-right">
+                  <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.UI.openModal('addFriendModal')">
+                    + Добавить напарника
+                  </button>
+                </div>
+              </div>
+
+              <!-- Блок: Смены, где уже участвуют друзья (1-клик вход) -->
+              <div class="friends-section-block">
+                <div class="friends-section-head">
+                  <div class="section-title-box">
+                    <h3 class="friends-section-title">Смены, где уже записаны ваши друзья</h3>
+                    <span class="friends-section-sub">Присоединяйтесь к напарнику в открытые слоты смены</span>
+                  </div>
+                </div>
+                <div class="friends-shifts-grid" id="friendsActiveShiftsList"></div>
+              </div>
+
+              <!-- Блок: Список напарников Самары -->
+              <div class="friends-section-block">
+                <div class="friends-section-head">
+                  <div class="section-title-box">
+                    <h3 class="friends-section-title">Ваша команда напарников</h3>
+                    <span class="friends-section-sub" id="friendsSubCount">4 напарника в Самаре</span>
+                  </div>
+                </div>
+                <div class="friends-cards-grid" id="friendsCardsGrid"></div>
+              </div>
+            </div>
+          </section>
+
         </main>
 
         <!-- МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ -->
@@ -687,6 +784,15 @@
           <span class="drawer-eligibility-tag" id="drawerEligibilityTag">Проверяется</span>
         </div>
       </div>
+      <!-- Блок состава смены и напарников -->
+      <div class="drawer-brigade-card" id="drawerBrigadeCard">
+        <div class="drawer-brigade-head">
+          <span class="drawer-brigade-title">Места в смене</span>
+          <span class="drawer-brigade-badge" id="drawerBrigadeBadge">1 из 4 мест</span>
+        </div>
+        <div class="drawer-slots-bar" id="drawerSlotsBar"></div>
+        <div class="drawer-assigned-friends-list" id="drawerAssignedFriendsList"></div>
+      </div>
       <div class="drawer-conflict-warning" id="drawerConflictWarning" style="display:none;"></div>
       <div class="drawer-desc-block">
         <h4 class="drawer-section-heading">Описание задач и требований</h4>
@@ -699,6 +805,7 @@
     </div>
     <div class="drawer-footer" id="drawerFooterActions">
       <button type="button" class="btn btn-primary-cta w-full" id="drawerTakeBtn">Взять смену</button>
+      <button type="button" class="btn btn-secondary-outline w-full" id="drawerCoOpBtn" style="display:none;" onclick="window.Eluma.Worker.openCoOpFriendModal(window.Eluma.Worker.getCurrentDetailOrderId())">+ Выйти с другом</button>
       <button type="button" class="btn btn-secondary-outline w-full" id="drawerCounterBtn" style="display:none">Предложить свою цену</button>
       <button type="button" class="btn btn-secondary-outline danger w-full" id="drawerCancelShiftBtn" style="display:none">Отказаться от смены</button>
     </div>
@@ -817,6 +924,59 @@
         <kbd class="palette-esc-badge" onclick="window.Eluma.UI.closeCommandPalette()">ESC</kbd>
       </div>
       <div class="command-palette-results" id="commandPaletteResults"></div>
+    </div>
+  </div>
+
+  <!-- Модалка: Выйти на смену с напарником (Co-Op) -->
+  <div class="modal-backdrop" id="coOpFriendModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog coop-friend-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Выйти на смену с напарником</h3>
+        <button type="button" class="modal-close-ico" onclick="window.Eluma.UI.closeModal('coOpFriendModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="coop-modal-body">
+        <div class="coop-shift-preview" id="coOpShiftPreview">
+          <h4 class="coop-shift-title" id="coOpShiftTitle">Загрузка смены...</h4>
+          <span class="coop-shift-meta" id="coOpShiftMeta">Свободно мест: 2</span>
+        </div>
+        <p class="coop-modal-subtitle">Выберите друга из ваших контактов Самары для совместного выхода:</p>
+        <div class="coop-friends-select-list" id="coOpFriendsSelectList"></div>
+        <div class="coop-modal-actions">
+          <button type="button" class="btn btn-primary-cta w-full" id="btnConfirmCoOpBooking" onclick="window.Eluma.Worker.confirmCoOpBooking()">Подтвердить совместную запись</button>
+          <button type="button" class="btn btn-secondary-outline w-full" onclick="window.Eluma.UI.closeModal('coOpFriendModal')">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Добавить напарника -->
+  <div class="modal-backdrop" id="addFriendModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Добавить напарника</h3>
+        <button type="button" class="modal-close-ico" onclick="window.Eluma.UI.closeModal('addFriendModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form onsubmit="window.Eluma.Worker.handleAddFriendSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" for="newFriendName">Имя и фамилия напарника</label>
+          <input type="text" id="newFriendName" class="form-input" placeholder="например, Роман Смирнов" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newFriendPhone">Номер телефона в Самаре</label>
+          <input type="tel" id="newFriendPhone" class="form-input" placeholder="+7 (927) 000-00-00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newFriendRole">Специализация / Направление</label>
+          <input type="text" id="newFriendRole" class="form-input" placeholder="например, Склад · Погрузка" value="Склад · Погрузка">
+        </div>
+        <div class="modal-footer-row">
+          <button type="submit" class="btn btn-primary-cta w-full">Сохранить в напарники</button>
+        </div>
+      </form>
     </div>
   </div>
 

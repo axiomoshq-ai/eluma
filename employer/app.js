@@ -193,6 +193,22 @@
     const isPublished = order.status !== 'cancelled';
     const durationLabel = order.orderType === 'private' ? `Задача ${order.hours} ч` : `Смена ${order.hours} ч`;
 
+    // Расчёт слотов бригады
+    const totalSlots = order.slotsTotal || 1;
+    let filledSlots = 0;
+    if (Array.isArray(order.assignedWorkerIds)) {
+      filledSlots = order.assignedWorkerIds.length;
+    } else if (order.assignedWorkerId) {
+      filledSlots = 1;
+    }
+    const slotsBadgeHtml = totalSlots > 1 ? `
+      <span class="emp-category-sep">·</span>
+      <span class="emp-slots-badge" title="Слоты бригады">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>${filledSlots} / ${totalSlots} мест</span>
+      </span>
+    ` : '';
+
     // Сводка откликов или назначенный исполнитель
     let summaryText = 'Радар 3 км активен • 0 откликов';
     if (order.assignedWorkerId) {
@@ -217,6 +233,7 @@
             ${UI.renderStatusBadge(order.status)}
             <span class="emp-category-sep">·</span>
             <span class="emp-category-inline">${UI.escapeHtml(order.category)}</span>
+            ${slotsBadgeHtml}
             <span class="emp-category-sep">·</span>
             <span class="badge-safe-deal" title="Средства заморожены в эскроу Eluma Safe">
               ${UI.SVG_ICONS.shield} <span>Эскроу</span>
@@ -641,6 +658,7 @@
     const addrEl = document.getElementById('taskAddressInput');
     const priceEl = document.getElementById('taskPriceInput');
     const hoursEl = document.getElementById('taskHoursSelect');
+    const slotsEl = document.getElementById('taskSlotsSelect');
     const daySelect = document.getElementById('taskDaySelect');
     const startSelect = document.getElementById('taskStartTimeSelect');
     const sosCheckbox = document.getElementById('taskUrgentSosCheckbox');
@@ -653,6 +671,7 @@
     const addr = addrEl ? addrEl.value.trim() : '';
     const rawPrice = parseInt(priceEl ? priceEl.value : 2500, 10);
     const hours = parseFloat(hoursEl ? hoursEl.value : 3);
+    const slotsTotal = parseInt(slotsEl ? slotsEl.value : 1, 10) || 1;
 
     if (!title || !rawPrice) {
       UI.showFeedbackToast('Ошибка', 'Заполните название и бюджет смены');
@@ -722,6 +741,8 @@
       perks: isSos ? ['Срочный СОС-вызов', 'СБП 15 мин', 'Eluma Safe Эскроу'] : ['СБП 15 мин', 'Eluma Safe Эскроу'],
       status: 'searching',
       assignedWorkerId: null,
+      slotsTotal: slotsTotal,
+      assignedWorkerIds: [],
       step: 1,
       proofs: { before: null, after: null, coords: null }
     };

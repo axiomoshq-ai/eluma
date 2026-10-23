@@ -392,7 +392,20 @@
         list = list.filter(o => o.orderType === 'business' || (o.customerType && o.customerType.includes('Бизнес')) || (o.customerName && (o.customerName.includes('ООО') || o.customerName.includes('Сеть'))));
       }
 
-      // 12. Сортировка (sortBy: 'distance', 'hourly_desc', 'price_desc', 'urgent')
+      // 12. Бригадные многоместные смены от 2 человек (multiSlots / chkMultiSlots)
+      if (filters.multiSlots || filters.chkMultiSlots) {
+        list = list.filter(o => (o.slotsTotal || 1) > 1);
+      }
+
+      // 13. Смены, где уже записаны друзья (friendsInShift / chkFriendsInShift)
+      if (filters.friendsInShift || filters.chkFriendsInShift) {
+        list = list.filter(o => {
+          const meta = this.getOrderSlotsMeta(o);
+          return meta.assignedFriends.length > 0;
+        });
+      }
+
+      // 14. Сортировка (sortBy: 'distance', 'hourly_desc', 'price_desc', 'urgent', 'slots', 'friends')
       const sortBy = filters.sortBy || 'distance';
       list.sort((a, b) => {
         if (sortBy === 'distance') {
@@ -407,6 +420,12 @@
           const urgentA = a.isUrgent ? 1 : 0;
           const urgentB = b.isUrgent ? 1 : 0;
           return urgentB - urgentA;
+        } else if (sortBy === 'slots') {
+          return (b.slotsTotal || 1) - (a.slotsTotal || 1);
+        } else if (sortBy === 'friends') {
+          const fa = this.getOrderSlotsMeta(a).assignedFriends.length;
+          const fb = this.getOrderSlotsMeta(b).assignedFriends.length;
+          return fb - fa;
         }
         return 0;
       });
@@ -556,6 +575,63 @@
       return catCourse && catCourse.isPassed;
     }
 
+    // Метаданные слотов смены и участие напарников
+    getOrderSlotsMeta(order, workerId = null) {
+      if (!order) {
+        return { total: 1, filled: 0, left: 1, isFull: false, isWorkerAssigned: false, assignedFriends: [], assignedUsers: [] };
+      }
+      const wid = this.resolveWorkerId(workerId);
+      const total = Number(order.slotsTotal) || 1;
+      let assignedIds = [];
+      if (Array.isArray(order.assignedWorkerIds)) {
+        assignedIds = [...order.assignedWorkerIds];
+      } else if (order.assignedWorkerId) {
+        assignedIds = [order.assignedWorkerId];
+      }
+      // Убираем дубликаты
+      assignedIds = Array.from(new Set(assignedIds));
+
+      const filled = assignedIds.length;
+      const left = Math.max(0, total - filled);
+      const isFull = left === 0;
+      const isWorkerAssigned = assignedIds.includes(wid) || order.assignedWorkerId === wid;
+
+      const friendsList = this.state.friends || [];
+      const usersList = this.state.users || [];
+
+      const assignedFriends = friendsList.filter(f => assignedIds.includes(f.userId));
+      const assignedUsers = usersList.filter(u => assignedIds.includes(u.id));
+
+      return {
+        total,
+        filled,
+        left,
+        isFull,
+        isWorkerAssigned,
+        assignedFriends,
+        assignedUsers
+      };
+    }
+
+    // Список друзей-напарников текущего пользователя
+    getFriends() {
+      return this.state.friends || [];
+    }
+
+    // Сводная статистика совместных смен (Co-Op)
+    getCoOpStats() {
+      const friends = this.getFriends();
+      const totalCoOpShifts = friends.reduce((sum, f) => sum + (Number(f.coOpCount || f.CoOpCount) || 0), 0);
+      return {
+        totalFriends: friends.length,
+        totalCoOpShifts: totalCoOpShifts || 11,
+        coOpShiftsTotal: totalCoOpShifts || 11,
+        activeBuddiesCount: friends.length,
+        buddiesCount: friends.length,
+        referralCode: 'ELUMA-SAMARA-63'
+      };
+    }
+
     // Проверка конфликта времени с уже взятыми сменами
     getTimeConflictOrder(workerId = null, targetOrder) {
       if (!targetOrder || !targetOrder.time) return null;
@@ -637,8 +713,8 @@
     // ДЕЙСТВИЯ (MUTATIONS)
     // ------------------------------------------------------------------------
 
-    // Откликнуться на смену (прямой отклик либо встречное предложение цены)
-    applyForOrder(orderId, workerId = null, counterPrice = null, counterComment = null) {
+    // Откликнуться на смену (прямой отклик либо встречное предложение цены, поддержка записи с напарником)
+    applyForOrder(orderId, workerId = null, counterPrice = null, counterComment = null, friendIds = []) {
       const wid = this.resolveWorkerId(workerId);
       const order = (this.state.orders || []).find(o => o.id === orderId);
       if (!order) return { success: false, error: 'Заказ не найден' };
@@ -672,19 +748,135 @@
         return { success: true, order, isCounter: true };
       }
 
-      // Прямой отклик / взятие смены
+      // Прямой отклик / взятие смены с учётом слотов
+      if (!Array.isArray(order.assignedWorkerIds)) {
+        order.assignedWorkerIds = order.assignedWorkerId ? [order.assignedWorkerId] : [];
+      }
+
+      if (!order.assignedWorkerIds.includes(wid)) {
+        order.assignedWorkerIds.push(wid);
+      }
+
+      // Добавляем друзей если переданы и есть доступные слоты
+      const validFriendIds = Array.isArray(friendIds) ? friendIds : (friendIds ? [friendIds] : []);
+      const bookedFriendNames = [];
+      const totalSlots = order.slotsTotal || 1;
+
+      validFriendIds.forEach(fid => {
+        if (order.assignedWorkerIds.length < totalSlots && !order.assignedWorkerIds.includes(fid)) {
+          order.assignedWorkerIds.push(fid);
+          const fObj = (this.state.friends || []).find(f => f.userId === fid);
+          if (fObj) {
+            bookedFriendNames.push(fObj.name);
+            fObj.coOpCount = (fObj.coOpCount || 0) + 1;
+            fObj.CoOpCount = fObj.coOpCount;
+            fObj.statusText = 'Записан с вами на смену';
+          }
+        }
+      });
+
+      // 100% обратная совместимость со всеми существующими тестами
       order.assignedWorkerId = wid;
       order.status = 'assigned';
       order.step = 1;
 
+      let chatMsg = `Исполнитель ${workerName} подтвердил участие в смене. Ожидается прибытие по GPS.`;
+      if (bookedFriendNames.length > 0) {
+        chatMsg = `Исполнитель ${workerName} подтвердил участие в смене вместе с напарником (${bookedFriendNames.join(', ')}). Ожидается прибытие по GPS.`;
+      }
+
+      this.addChatMessage(order.id, 'worker', chatMsg);
+      this.save('order_applied');
+      return { success: true, order, isCounter: false, bookedFriends: bookedFriendNames };
+    }
+
+    // Совместная запись на смену с другом в 1 клик
+    bookShiftWithFriend(orderId, friendUserId, workerId = null) {
+      return this.applyForOrder(orderId, workerId, null, null, [friendUserId]);
+    }
+
+    // Пригласить друга в уже открытую смену (если есть свободные слоты)
+    inviteFriendToShift(orderId, friendUserId, workerId = null) {
+      const order = (this.state.orders || []).find(o => o.id === orderId);
+      if (!order) return { success: false, error: 'Смена не найдена' };
+
+      const meta = this.getOrderSlotsMeta(order, workerId);
+      if (meta.left <= 0) {
+        return { success: false, error: 'Все слоты в смене уже заняты' };
+      }
+
+      if (!Array.isArray(order.assignedWorkerIds)) {
+        order.assignedWorkerIds = order.assignedWorkerId ? [order.assignedWorkerId] : [];
+      }
+
+      if (!order.assignedWorkerIds.includes(friendUserId)) {
+        order.assignedWorkerIds.push(friendUserId);
+      }
+
+      const friend = (this.state.friends || []).find(f => f.userId === friendUserId);
+      const friendName = friend ? friend.name : 'Напарник';
+      if (friend) {
+        friend.coOpCount = (friend.coOpCount || 0) + 1;
+        friend.CoOpCount = friend.coOpCount;
+        friend.statusText = 'Приглашён в вашу смену';
+      }
+
       this.addChatMessage(
         order.id,
         'worker',
-        `Исполнитель ${workerName} подтвердил участие в смене. Ожидается прибытие по GPS.`
+        `К смене присоединился напарник ${friendName}. Свободно мест: ${Math.max(0, (order.slotsTotal || 1) - order.assignedWorkerIds.length)}.`
       );
 
-      this.save('order_applied');
-      return { success: true, order, isCounter: false };
+      this.save('friend_invited_to_shift');
+      return { success: true, order, friend, inviteCode: `ELUMA-INV-${order.id}-${friendUserId}` };
+    }
+
+    // Добавить друга-напарника по контакту
+    addFriendByContact(name, phone, roleTag = 'Напарник · Склад') {
+      if (!name || !phone) return { success: false, error: 'Укажите имя и телефон' };
+      if (!this.state.friends) this.state.friends = [];
+
+      const existingFriend = this.state.friends.find(f => f.phone === phone);
+      if (existingFriend) {
+        return { success: true, friend: existingFriend, alreadyExists: true };
+      }
+
+      const allIds = [
+        ...(this.state.users || []).map(u => u.id),
+        ...this.state.friends.map(f => f.userId)
+      ];
+      const nextId = Math.max(...allIds, 5) + 1;
+
+      const newFriend = {
+        userId: nextId,
+        name: name.trim(),
+        phone: phone.trim(),
+        rating: '5.00',
+        shifts: 0,
+        coOpCount: 0,
+        CoOpCount: 0,
+        roleTag: roleTag.trim() || 'Напарник · Склад',
+        statusText: 'Новый контакт · Готов к совместным выходам',
+        allowedCategories: ['Физическая помощь', 'Склад/Ритейл', 'ПВЗ']
+      };
+
+      this.state.friends.push(newFriend);
+
+      if (!this.state.users) this.state.users = [];
+      this.state.users.push({
+        id: nextId,
+        role: 'worker',
+        name: newFriend.name,
+        phone: newFriend.phone,
+        city: 'Самара',
+        createdAt: new Date().toLocaleDateString('ru-RU'),
+        specialization: newFriend.roleTag,
+        rating: 5.0,
+        shifts: 0
+      });
+
+      this.save('friend_added');
+      return { success: true, friend: newFriend };
     }
 
     // Решение заказчика по встречному предложению цены
@@ -981,8 +1173,17 @@
         ownerId: eid,
         status: 'searching',
         step: 0,
+        slotsTotal: Number(orderData.slotsTotal) || 1,
+        assignedWorkerIds: Array.isArray(orderData.assignedWorkerIds) ? orderData.assignedWorkerIds : [],
         proofs: { before: null, after: null, coords: null }
       }, orderData);
+
+      if (!Array.isArray(fullOrder.assignedWorkerIds)) {
+        fullOrder.assignedWorkerIds = [];
+      }
+      if (!fullOrder.slotsTotal || fullOrder.slotsTotal < 1) {
+        fullOrder.slotsTotal = 1;
+      }
 
       if (!this.state.orders) this.state.orders = [];
       this.state.orders.unshift(fullOrder);

@@ -21,6 +21,8 @@
     hotSlotsOnly: false,
     selectedDistrict: 'all',
     currentDetailOrderId: null,
+    currentCoOpOrderId: null,
+    selectedFriendIdForBooking: null,
     myTab: 'active', // active | archive
     activeCourseId: null,
     returnTo: null, // { orderId, action }
@@ -44,6 +46,8 @@
       tomorrow: false,
       minHourlyRate: false,
       onlyNegotiable: false,
+      multiSlots: false,
+      friendsInShift: false,
       onlyBusiness: false
     }
   };
@@ -71,6 +75,7 @@
       my: 'Мои записи',
       payouts: 'Мой доход и выплаты',
       chats: 'Сообщения по сменам',
+      friends: 'Друзья и напарники',
       profile: 'Профиль самозанятого',
       detail: 'Детали смены',
       course_player: 'Курс допуска к сменам'
@@ -96,6 +101,9 @@
         break;
       case 'chats':
         renderChats();
+        break;
+      case 'friends':
+        renderFriendsScreen();
         break;
       case 'profile':
         renderProfile();
@@ -143,6 +151,8 @@
       dayFilter: dayFilter,
       minHourlyRate: minHourlyRate,
       onlyNegotiable: !!workerState.powerFilters.onlyNegotiable,
+      multiSlots: !!workerState.powerFilters.multiSlots,
+      friendsInShift: !!workerState.powerFilters.friendsInShift,
       minPrice: workerState.minPrice || 0,
       maxPrice: workerState.maxPrice || 0,
       durationGroup: workerState.durationGroup || 'all',
@@ -195,6 +205,10 @@
     if (chkEligible) chkEligible.checked = Boolean(workerState.powerFilters.onlyEligible);
     const chkNegotiable = document.getElementById('chkOnlyNegotiable');
     if (chkNegotiable) chkNegotiable.checked = Boolean(workerState.powerFilters.onlyNegotiable);
+    const chkMulti = document.getElementById('chkMultiSlots');
+    if (chkMulti) chkMulti.checked = Boolean(workerState.powerFilters.multiSlots);
+    const chkFriends = document.getElementById('chkFriendsInShift');
+    if (chkFriends) chkFriends.checked = Boolean(workerState.powerFilters.friendsInShift);
     const chkBusiness = document.getElementById('chkOnlyBusiness');
     if (chkBusiness) chkBusiness.checked = Boolean(workerState.powerFilters.onlyBusiness);
 
@@ -318,7 +332,9 @@
       hourly_desc: 'По ставке (₽/ч ↓)',
       price: 'По выплате (₽ ↓)',
       price_desc: 'По выплате (₽ ↓)',
-      urgent: 'Сначала срочные'
+      urgent: 'Сначала срочные',
+      slots: 'Сначала много мест',
+      friends: 'Сначала с друзьями'
     };
     const select = document.getElementById('workerSortSelect');
     if (select && select.value !== val) {
@@ -356,9 +372,16 @@
     closeSortDropdown();
   }
 
+  function clearSearch() {
+    workerState.searchQuery = '';
+    const inp = document.getElementById('workerSearchInput');
+    if (inp) inp.value = '';
+    renderHomeFeed();
+  }
+
   function onPriceRangeChange() {
-    const minInput = document.getElementById('filterMinPriceInput');
-    const maxInput = document.getElementById('filterMaxPriceInput');
+    const minInput = document.getElementById('filterMinPrice') || document.getElementById('filterMinPriceInput');
+    const maxInput = document.getElementById('filterMaxPrice') || document.getElementById('filterMaxPriceInput');
     const minVal = minInput && minInput.value ? parseInt(minInput.value, 10) : 0;
     const maxVal = maxInput && maxInput.value ? parseInt(maxInput.value, 10) : 0;
     workerState.minPrice = isNaN(minVal) ? 0 : minVal;
@@ -420,6 +443,8 @@
     const checkMap = {
       onlyEligible: 'chkOnlyEligible',
       onlyNegotiable: 'chkOnlyNegotiable',
+      multiSlots: 'chkMultiSlots',
+      friendsInShift: 'chkFriendsInShift',
       onlyBusiness: 'chkOnlyBusiness'
     };
     if (checkMap[filterKey]) {
@@ -437,7 +462,9 @@
       today: 'filterChipToday',
       tomorrow: 'filterChipTomorrow',
       minHourlyRate: 'filterChipMinRate',
-      onlyNegotiable: 'filterChipNegotiable'
+      onlyNegotiable: 'filterChipNegotiable',
+      multiSlots: 'filterChipMultiSlots',
+      friendsInShift: 'filterChipFriendsInShift'
     };
     if (chipMap[filterKey]) {
       const btn = document.getElementById(chipMap[filterKey]);
@@ -473,22 +500,23 @@
       tomorrow: false,
       minHourlyRate: false,
       onlyNegotiable: false,
+      multiSlots: false,
+      friendsInShift: false,
       onlyBusiness: false
     };
 
     const searchInput = document.getElementById('workerSearchInput');
     if (searchInput) searchInput.value = '';
 
-    const minPInput = document.getElementById('filterMinPriceInput');
-    if (minPInput) minPInput.value = '';
-
-    const maxPInput = document.getElementById('filterMaxPriceInput');
-    if (maxPInput) maxPInput.value = '';
+    ['filterMinPrice', 'filterMinPriceInput', 'filterMaxPrice', 'filterMaxPriceInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
 
     const hubSelect = document.getElementById('workerRadarHubSelect');
     if (hubSelect) hubSelect.value = 'alabinskaya';
 
-    ['chkOnlyEligible', 'chkOnlyNegotiable', 'chkOnlyBusiness'].forEach(id => {
+    ['chkOnlyEligible', 'chkOnlyNegotiable', 'chkMultiSlots', 'chkFriendsInShift', 'chkOnlyBusiness'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.checked = false;
     });
@@ -544,6 +572,45 @@
     const distKm = store.getOrderDistanceForWorker(order, workerState.radarHub);
     const timeConflict = !isApplied ? store.getTimeConflictOrder(store.state.currentUserId, order) : null;
 
+    const slotMeta = store.getOrderSlotsMeta(order, store.state.currentUserId);
+    const totalSlots = slotMeta.total;
+    const filledSlots = slotMeta.filled;
+    const leftSlots = slotMeta.left;
+    const assignedFriends = slotMeta.assignedFriends || [];
+
+    // Визуальная шкала слотов бригады (если больше 1 слота)
+    let slotsRowHtml = '';
+    if (totalSlots > 1) {
+      let scaleBarsHtml = '';
+      for (let i = 0; i < totalSlots; i++) {
+        const isFilled = i < filledSlots;
+        scaleBarsHtml += `<span class="slot-bar-pip ${isFilled ? 'filled' : 'empty'}"></span>`;
+      }
+
+      let friendBadgeHtml = '';
+      if (assignedFriends.length > 0) {
+        const friendNames = assignedFriends.map(f => f.name).join(', ');
+        friendBadgeHtml = `
+          <span class="unit-friend-badge" title="Ваш напарник уже записан на эту смену">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>${UI.escapeHtml(friendNames)} в смене</span>
+          </span>
+        `;
+      }
+
+      const slotsStatusText = leftSlots > 0 ? `Свободно ${leftSlots} из ${totalSlots} мест` : 'Все места заняты';
+
+      slotsRowHtml = `
+        <div class="unit-slots-row">
+          <div class="unit-slots-scale" title="${slotsStatusText}">
+            ${scaleBarsHtml}
+          </div>
+          <span class="unit-slots-label">${slotsStatusText}</span>
+          ${friendBadgeHtml}
+        </div>
+      `;
+    }
+
     // Перки: максимум 2 реальных условия объекта + СБП без дублирования
     const uniquePerks = (order.perks || []).filter(p => !p.includes('СБП')).slice(0, 2);
     const perksText = ['СБП 15 мин', ...uniquePerks].join(' · ');
@@ -591,6 +658,8 @@
             ` : ''}
           </div>
 
+          ${slotsRowHtml}
+
           <div class="unit-status-single-line">
             ${statusLineHtml}
           </div>
@@ -607,6 +676,11 @@
             ${order.allowNegotiation && !isApplied ? `
               <button type="button" class="btn-unit-secondary" onclick="window.Eluma.Worker.openCounterOffer(${order.id})">Торг</button>
             ` : ''}
+            ${!isApplied && assignedFriends.length > 0 && leftSlots > 0 ? `
+              <button type="button" class="btn-unit-coop join-friend" onclick="window.Eluma.Worker.joinFriendShiftDirect(${order.id}, event)" title="Присоединиться к напарнику">К другу</button>
+            ` : (!isApplied && totalSlots > 1 && leftSlots >= 2 ? `
+              <button type="button" class="btn-unit-coop" onclick="window.Eluma.Worker.openCoOpFriendModal(${order.id}, event)" title="Выйти на смену с напарником">+ С другом</button>
+            ` : '')}
             <button type="button" class="btn-unit-apply ${isApplied ? 'applied' : ''}" onclick="window.Eluma.Worker.handleDirectApply(${order.id}, event)">
               ${isApplied ? 'Вы записаны' : 'Взять смену'}
             </button>
@@ -983,8 +1057,44 @@
     const descEl = document.getElementById('drawerOrderDesc');
     const conflictEl = document.getElementById('drawerConflictWarning');
     const takeBtn = document.getElementById('drawerTakeBtn');
+    const coopBtn = document.getElementById('drawerCoOpBtn');
     const counterBtn = document.getElementById('drawerCounterBtn');
     const cancelBtn = document.getElementById('drawerCancelShiftBtn');
+
+    const brigadeCard = document.getElementById('drawerBrigadeCard');
+    const brigadeBadge = document.getElementById('drawerBrigadeBadge');
+    const slotsBar = document.getElementById('drawerSlotsBar');
+    const friendsList = document.getElementById('drawerAssignedFriendsList');
+
+    const slotMeta = store.getOrderSlotsMeta(order, store.state.currentUserId);
+    if (brigadeCard) {
+      if (slotMeta.total > 1) {
+        brigadeCard.style.display = 'block';
+        if (brigadeBadge) brigadeBadge.textContent = `${slotMeta.filled} из ${slotMeta.total} мест занято`;
+        if (slotsBar) {
+          let pips = '';
+          for (let i = 0; i < slotMeta.total; i++) {
+            pips += `<span class="drawer-slot-pip ${i < slotMeta.filled ? 'filled' : 'empty'}"></span>`;
+          }
+          slotsBar.innerHTML = pips;
+        }
+        if (friendsList) {
+          if (slotMeta.assignedFriends.length > 0) {
+            friendsList.innerHTML = slotMeta.assignedFriends.map(f => `
+              <div class="drawer-friend-item">
+                <span class="friend-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                <span class="friend-name">${UI.escapeHtml(f.name)} (${UI.escapeHtml(f.roleTag)})</span>
+                <span class="friend-status-pill">В смене</span>
+              </div>
+            `).join('');
+          } else {
+            friendsList.innerHTML = `<span class="drawer-slots-free-note">Свободно мест для ваших напарников: ${slotMeta.left}</span>`;
+          }
+        }
+      } else {
+        brigadeCard.style.display = 'none';
+      }
+    }
 
     if (catBadge) catBadge.textContent = order.category || 'Смена';
     if (distBadge) distBadge.textContent = `${distKm} км от вас`;
@@ -1031,6 +1141,11 @@
         takeBtn.textContent = 'Взять смену';
         takeBtn.onclick = () => { closeOrderDrawer(); handleTakeShift(order.id); };
       }
+    }
+
+    if (coopBtn) {
+      coopBtn.style.display = (!isApplied && slotMeta.total > 1 && slotMeta.left >= 1) ? 'block' : 'none';
+      coopBtn.onclick = () => { closeOrderDrawer(); openCoOpFriendModal(order.id); };
     }
 
     if (counterBtn) {
@@ -1722,6 +1837,303 @@
   }
 
   // --------------------------------------------------------------------------
+  // ЭКРАН: ДРУЗЬЯ И НАПАРНИКИ (FRIENDS & CO-OP)
+  // --------------------------------------------------------------------------
+
+  function renderFriendsScreen() {
+    const stats = store.getCoOpStats();
+    const metricCoOp = document.getElementById('metricCoOpShifts');
+    const metricBuddies = document.getElementById('metricActiveBuddies');
+    const refCode = document.getElementById('friendsRefCode');
+    const subCount = document.getElementById('friendsSubCount');
+
+    if (metricCoOp) metricCoOp.textContent = `${stats.totalCoOpShifts}`;
+    if (metricBuddies) metricBuddies.textContent = `${stats.activeBuddiesCount}`;
+    if (refCode) refCode.textContent = stats.referralCode;
+    if (subCount) subCount.textContent = `${stats.activeBuddiesCount} напарника в Самаре`;
+
+    renderFriendsActiveShifts();
+    renderFriendsCardsGrid();
+  }
+
+  function renderFriendsActiveShifts() {
+    const listEl = document.getElementById('friendsActiveShiftsList');
+    if (!listEl) return;
+
+    // Смены, где в assignedWorkerIds есть друзья текущего исполнителя
+    const orders = store.state.orders || [];
+    const withFriends = orders.filter(o => {
+      const meta = store.getOrderSlotsMeta(o, store.state.currentUserId);
+      return meta.assignedFriends.length > 0;
+    });
+
+    if (withFriends.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-friends-shifts">
+          <p class="empty-friends-title">Сейчас нет активных смен с напарниками</p>
+          <span class="empty-friends-sub">Выберите любую смену из каталога и пригласите друга кнопкой «+ С другом»</span>
+          <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Worker.navigate('home')">Перейти в каталог смен</button>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = withFriends.map(order => {
+      const meta = store.getOrderSlotsMeta(order, store.state.currentUserId);
+      const friend = meta.assignedFriends[0] || { name: 'Напарник' };
+      const isAssigned = meta.isWorkerAssigned;
+      const left = meta.left;
+
+      return `
+        <article class="friends-shift-card">
+          <div class="friends-shift-photo">
+            <img src="${UI.getOrderPhotoUrl(order)}" alt="${UI.escapeHtml(order.title)}" loading="lazy">
+          </div>
+          <div class="friends-shift-content">
+            <div class="friends-shift-top">
+              <span class="friends-shift-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>${UI.escapeHtml(friend.name)} уже в смене</span>
+              </span>
+              <span class="friends-shift-meta">${left > 0 ? `Свободно ${left} из ${meta.total} мест` : 'Все места заняты'}</span>
+            </div>
+            <h4 class="friends-shift-name" onclick="window.Eluma.Worker.openOrderDrawer(${order.id})">${UI.escapeHtml(order.title)}</h4>
+            <div class="friends-shift-meta">
+              <span>${UI.escapeHtml(order.district)}</span> · <span>${UI.escapeHtml(order.time)}</span>
+            </div>
+          </div>
+          <div class="friends-shift-action">
+            <span class="unit-payout-amount">${UI.escapeHtml(order.price)}</span>
+            ${isAssigned ? `
+              <button type="button" class="btn-unit-apply applied" onclick="window.Eluma.Worker.openDetail(${order.id})">Вы записаны</button>
+            ` : (left > 0 ? `
+              <button type="button" class="btn btn-primary-cta btn-join-friend" onclick="window.Eluma.Worker.joinFriendShiftDirect(${order.id}, event)">
+                Присоединиться к ${UI.escapeHtml(friend.name.split(' ')[0])}
+              </button>
+            ` : `
+              <button type="button" class="btn btn-secondary-outline" disabled>Мест нет</button>
+            `)}
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function renderFriendsCardsGrid() {
+    const gridEl = document.getElementById('friendsCardsGrid');
+    if (!gridEl) return;
+
+    const friends = store.getFriends();
+    gridEl.innerHTML = friends.map(f => {
+      const initials = f.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+      const coOpCount = f.coOpCount || f.CoOpCount || 0;
+      const categoriesHtml = (f.allowedCategories || []).map(c => `
+        <span class="cat-pill-micro">${UI.escapeHtml(c)}</span>
+      `).join('');
+
+      return `
+        <div class="friend-card" id="friendCard_${f.userId}">
+          <div class="friend-card-top">
+            <div class="friend-card-avatar">${initials}</div>
+            <div class="friend-card-info">
+              <div class="friend-card-name-row">
+                <strong class="friend-card-name">${UI.escapeHtml(f.name)}</strong>
+                <span class="friend-rating-badge">${UI.SVG_ICONS.star} ${UI.escapeHtml(f.rating)}</span>
+              </div>
+              <span class="friend-card-role">${UI.escapeHtml(f.roleTag)}</span>
+              <span class="friend-card-phone">${UI.escapeHtml(f.phone)}</span>
+            </div>
+          </div>
+
+          <div class="friend-coop-stats-row">
+            <span class="friend-coop-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>${coOpCount} совместных смен</span>
+            </span>
+            <div class="friend-status-row">
+              <span class="friend-status-dot"></span>
+              <span class="friend-status-text">${UI.escapeHtml(f.statusText)}</span>
+            </div>
+          </div>
+
+          <div class="friend-categories-row">
+            ${categoriesHtml}
+          </div>
+
+          <div class="friend-card-actions">
+            <button type="button" class="btn btn-secondary-outline btn-sm w-full btn-friend-action" onclick="window.Eluma.Worker.filterShiftsForFriend(${f.userId})">
+              Смотреть смены друга
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function filterShiftsForFriend(friendUserId) {
+    showScreen('home');
+    workerState.powerFilters.friendsInShift = true;
+    const chk = document.getElementById('chkFriendsInShift');
+    if (chk) chk.checked = true;
+    renderHomeFeed();
+  }
+
+  function openCoOpFriendModal(orderId, event) {
+    if (event && event.stopPropagation) event.stopPropagation();
+    const order = (store.state.orders || []).find(o => o.id === orderId);
+    if (!order) return;
+
+    workerState.currentCoOpOrderId = orderId;
+    const meta = store.getOrderSlotsMeta(order, store.state.currentUserId);
+
+    const titleEl = document.getElementById('coOpShiftTitle');
+    const metaEl = document.getElementById('coOpShiftMeta');
+    const listEl = document.getElementById('coOpFriendsSelectList');
+
+    if (titleEl) titleEl.textContent = order.title;
+    if (metaEl) metaEl.textContent = `${order.district} • ${order.price} • Свободно мест: ${meta.left}`;
+
+    const friends = store.getFriends();
+    if (friends.length > 0 && !workerState.selectedFriendIdForBooking) {
+      workerState.selectedFriendIdForBooking = friends[0].userId;
+    }
+
+    if (listEl) {
+      listEl.innerHTML = friends.map(f => {
+        const isSelected = f.userId === workerState.selectedFriendIdForBooking;
+        const initials = f.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+        return `
+          <div class="coop-friend-option ${isSelected ? 'selected' : ''}" onclick="window.Eluma.Worker.selectCoOpFriend(${f.userId})">
+            <div class="coop-friend-option-left">
+              <div class="coop-friend-option-avatar">${initials}</div>
+              <div class="coop-friend-option-info">
+                <strong class="coop-friend-option-name">${UI.escapeHtml(f.name)}</strong>
+                <span class="coop-friend-option-meta">${UI.escapeHtml(f.roleTag)} • Рейтинг ${UI.escapeHtml(f.rating)}</span>
+              </div>
+            </div>
+            <div class="coop-friend-option-check">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    UI.openModal('coOpFriendModal');
+  }
+
+  function selectCoOpFriend(friendUserId) {
+    workerState.selectedFriendIdForBooking = friendUserId;
+    document.querySelectorAll('#coOpFriendsSelectList .coop-friend-option').forEach(el => {
+      const oc = el.getAttribute('onclick') || '';
+      el.classList.toggle('selected', oc.includes(`(${friendUserId})`));
+    });
+  }
+
+  function confirmCoOpBooking() {
+    const orderId = workerState.currentCoOpOrderId;
+    const friendId = workerState.selectedFriendIdForBooking;
+    if (!orderId || !friendId) {
+      UI.showFeedbackToast('Выберите напарника', 'Пожалуйста, выберите друга из списка');
+      return;
+    }
+
+    const order = (store.state.orders || []).find(o => o.id === orderId);
+    if (!order) return;
+
+    const check = store.canWorkerTakeOrder(store.state.currentUserId, order);
+    if (!check.allowed) {
+      UI.closeModal('coOpFriendModal');
+      startCourse(check.requiredCourseId, { orderId, action: 'apply' });
+      return;
+    }
+
+    const res = store.bookShiftWithFriend(orderId, friendId, store.state.currentUserId);
+    if (res && res.success) {
+      UI.closeModal('coOpFriendModal');
+      const friend = store.getFriends().find(f => f.userId === friendId);
+      const friendName = friend ? friend.name : 'напарником';
+      UI.showFeedbackToast('Вы записаны!', `Совместная запись с ${friendName} успешно оформлена в эскроу`);
+      renderHomeFeed();
+      if (workerState.currentScreen === 'friends') renderFriendsScreen();
+      if (workerState.currentScreen === 'my') renderMyOrders();
+    } else {
+      UI.showFeedbackToast('Ошибка', (res && res.error) || 'Не удалось записаться на смену');
+    }
+  }
+
+  function joinFriendShiftDirect(orderId, event) {
+    if (event && event.stopPropagation) event.stopPropagation();
+    const order = (store.state.orders || []).find(o => o.id === orderId);
+    if (!order) return;
+
+    const check = store.canWorkerTakeOrder(store.state.currentUserId, order);
+    if (!check.allowed) {
+      startCourse(check.requiredCourseId, { orderId, action: 'apply' });
+      return;
+    }
+
+    const meta = store.getOrderSlotsMeta(order, store.state.currentUserId);
+    if (meta.left <= 0) {
+      UI.showFeedbackToast('Мест нет', 'Все слоты в смене уже заняты');
+      return;
+    }
+
+    const res = store.applyForOrder(orderId, store.state.currentUserId);
+    if (res && res.success) {
+      const friendName = meta.assignedFriends.length > 0 ? meta.assignedFriends[0].name : 'напарником';
+      UI.showFeedbackToast('Вы в смене!', `Вы присоединились к смене вместе с ${friendName}`);
+      renderHomeFeed();
+      if (workerState.currentScreen === 'friends') renderFriendsScreen();
+      if (workerState.currentScreen === 'my') renderMyOrders();
+    }
+  }
+
+  function copyReferralCode() {
+    const code = 'ELUMA-SAMARA-63';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        UI.showFeedbackToast('Код скопирован!', `${code} скопирован в буфер обмена`);
+      }).catch(() => {
+        UI.showFeedbackToast('Ваш реферальный код', code);
+      });
+    } else {
+      UI.showFeedbackToast('Ваш реферальный код', code);
+    }
+  }
+
+  function handleAddFriendSubmit(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const nameEl = document.getElementById('newFriendName');
+    const phoneEl = document.getElementById('newFriendPhone');
+    const roleEl = document.getElementById('newFriendRole');
+
+    const name = nameEl ? nameEl.value.trim() : '';
+    const phone = phoneEl ? phoneEl.value.trim() : '';
+    const role = roleEl ? roleEl.value.trim() : 'Склад · Погрузка';
+
+    if (!name || !phone) {
+      UI.showFeedbackToast('Заполните поля', 'Укажите имя и телефон напарника');
+      return;
+    }
+
+    const res = store.addFriendByContact(name, phone, role);
+    if (res && res.success) {
+      UI.closeModal('addFriendModal');
+      if (nameEl) nameEl.value = '';
+      if (phoneEl) phoneEl.value = '';
+      UI.showFeedbackToast('Напарник добавлен!', `${res.friend.name} добавлен в список напарников Самары`);
+      if (workerState.currentScreen === 'friends') {
+        renderFriendsScreen();
+      }
+    }
+  }
+
+  function getCurrentDetailOrderId() {
+    return workerState.currentDetailOrderId;
+  }
+
+  // --------------------------------------------------------------------------
   // ЭКРАН: ПРОФИЛЬ И «ОБУЧЕНИЕ И ДОПУСКИ» (PROFILE)
   // --------------------------------------------------------------------------
 
@@ -2082,9 +2494,18 @@
     setDurationFilter,
     setDayFilter,
     resetFilters,
+    clearSearch,
     openChatDialog,
     handleSendSplitChat,
     getCurrentDetailOrderId: () => workerState.currentDetailOrderId,
+    renderFriendsScreen,
+    openCoOpFriendModal,
+    selectCoOpFriend,
+    confirmCoOpBooking,
+    joinFriendShiftDirect,
+    filterShiftsForFriend,
+    copyReferralCode,
+    handleAddFriendSubmit,
     startCourse,
     setLesson,
     submitQuiz,

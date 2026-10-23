@@ -3172,69 +3172,93 @@ textarea.form-control {
 .eluma-dev-floating-pill,
 .olksi-dev-floating-pill {
   position: fixed;
-  bottom: 12px;
-  right: 12px;
-  z-index: 9999;
+  bottom: 20px;
+  right: 16px;
+  height: 28px;
+  box-sizing: border-box;
+  z-index: 999;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(20, 20, 19, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 3px 5px;
+  background: rgba(20, 20, 19, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 10px;
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-  opacity: 0.68;
+  opacity: 0.65;
   transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+[data-theme="light"] .eluma-dev-floating-pill,
+[data-theme="light"] .olksi-dev-floating-pill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(20, 20, 19, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .eluma-dev-floating-pill:hover,
 .olksi-dev-floating-pill:hover {
-  opacity: 1;
+  opacity: 0.95;
   transform: translateY(-1px);
 }
 
 @media (max-width: 1023px) {
   .eluma-dev-floating-pill,
   .olksi-dev-floating-pill {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
     right: 12px;
   }
 }
 
 .dev-role-switch-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: #FFFFFF;
   border: none;
   border-radius: 999px;
-  padding: 3px 8px;
+  padding: 2px 7px;
+  height: 20px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  transition: background var(--ease-fast);
+  gap: 3px;
+  transition: background 0.15s ease;
+}
+
+[data-theme="light"] .dev-role-switch-btn {
+  background: rgba(20, 20, 19, 0.06);
+  color: #141413;
 }
 
 .dev-role-switch-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="light"] .dev-role-switch-btn:hover {
+  background: rgba(20, 20, 19, 0.12);
 }
 
 .dev-floating-btn {
   background: transparent;
   color: rgba(255, 255, 255, 0.88);
   border: none;
-  padding: 3px 6px;
+  padding: 2px 6px;
+  height: 20px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  transition: color var(--ease-fast);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+[data-theme="light"] .dev-floating-btn {
+  color: #141413;
 }
 
 .dev-floating-btn:hover {
@@ -8946,4 +8970,761 @@ textarea.form-control {
 
 [data-theme="dark"] .sort-item-check {
   color: #FFFFFF;
+}
+
+/* ==========================================================================
+   26. ELUMA v24 — MARKETPLACE LEFT FILTER, MULTI-SLOT SHIFTS & CO-OP FRIENDS
+   ========================================================================== */
+
+/* Search input clear button */
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.search-input-box {
+  position: relative;
+}
+
+/* Sidebar filter footer reset button */
+.mp-filter-footer {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mp-reset-btn {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+/* Multi-slot shifts scale in worker feed card */
+.unit-slots-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 2px 0;
+  flex-wrap: wrap;
+}
+
+.unit-slots-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.slot-bar-pip {
+  display: inline-block;
+  width: 14px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+  transition: background 0.15s ease;
+}
+
+.slot-bar-pip.filled {
+  background: var(--accent-green, #15803D);
+}
+
+.slot-bar-pip.empty {
+  background: rgba(217, 78, 40, 0.25);
+  border: 1px dashed var(--accent-terracotta, #D94E28);
+}
+
+.unit-slots-label {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.unit-friend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #15803D;
+  background: rgba(21, 128, 61, 0.1);
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(21, 128, 61, 0.2);
+}
+
+/* Co-Op Buttons in feed */
+.btn-unit-coop {
+  background: rgba(217, 78, 40, 0.08);
+  color: var(--accent-terracotta, #D94E28);
+  border: 1px solid rgba(217, 78, 40, 0.3);
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-unit-coop:hover {
+  background: var(--accent-terracotta, #D94E28);
+  color: #FFFFFF;
+}
+
+.btn-unit-coop.join-friend {
+  background: rgba(21, 128, 61, 0.1);
+  color: #15803D;
+  border-color: rgba(21, 128, 61, 0.35);
+}
+
+.btn-unit-coop.join-friend:hover {
+  background: #15803D;
+  color: #FFFFFF;
+}
+
+/* Drawer brigade card */
+.drawer-brigade-card {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: var(--bg-surface-secondary, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 8px);
+}
+
+.drawer-brigade-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.drawer-brigade-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.drawer-brigade-badge {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--accent-terracotta, #D94E28);
+  background: rgba(217, 78, 40, 0.08);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.drawer-slots-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.drawer-slot-pip {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+}
+
+.drawer-slot-pip.filled {
+  background: var(--accent-green, #15803D);
+}
+
+.drawer-slot-pip.empty {
+  background: rgba(217, 78, 40, 0.18);
+  border: 1px dashed var(--accent-terracotta, #D94E28);
+}
+
+.drawer-assigned-friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawer-friend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.friend-ico {
+  color: var(--accent-green, #15803D);
+  display: inline-flex;
+}
+
+.friend-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.friend-status-pill {
+  font-size: 0.7rem;
+  background: rgba(21, 128, 61, 0.1);
+  color: #15803D;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.drawer-slots-free-note {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+/* Employer slots badge */
+.emp-slots-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/* Friends & Co-Op Screen (#scr-wrk-friends) */
+.friends-dashboard-wrap {
+  padding: 16px 20px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.friends-hero-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: var(--bg-surface, #FFFFFF);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.friends-hero-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.friends-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--accent-terracotta, #D94E28);
+  background: rgba(217, 78, 40, 0.08);
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.friends-hero-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.friends-hero-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0 0 16px 0;
+  line-height: 1.45;
+}
+
+.friends-hero-metrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.friends-metric-box {
+  background: var(--bg-surface-secondary, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.friends-metric-num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.friends-metric-lbl {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.friends-metric-box.promo {
+  background: rgba(217, 78, 40, 0.05);
+  border-color: rgba(217, 78, 40, 0.2);
+}
+
+.friends-ref-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.friends-ref-code {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-terracotta, #D94E28);
+  background: rgba(217, 78, 40, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.btn-copy-code {
+  background: none;
+  border: none;
+  color: var(--accent-terracotta, #D94E28);
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: transform 0.15s ease;
+}
+
+.btn-copy-code:hover {
+  transform: scale(1.15);
+}
+
+.friends-hero-right {
+  display: flex;
+  align-items: center;
+}
+
+.friends-section-block {
+  margin-bottom: 28px;
+}
+
+.friends-section-head {
+  margin-bottom: 14px;
+}
+
+.friends-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.friends-section-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.friends-shifts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.friends-shift-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-surface, #FFFFFF);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-sm);
+  align-items: center;
+}
+
+.friends-shift-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.friends-shift-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.friends-shift-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.friends-shift-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.friends-shift-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #15803D;
+  background: rgba(21, 128, 61, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.friends-shift-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.friends-shift-name:hover {
+  color: var(--accent-terracotta, #D94E28);
+}
+
+.friends-shift-meta {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.friends-shift-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-join-friend {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.empty-friends-shifts {
+  padding: 24px;
+  background: var(--bg-surface, #FFFFFF);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md, 8px);
+  text-align: center;
+}
+
+.empty-friends-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.empty-friends-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.friends-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.friend-card {
+  padding: 16px;
+  background: var(--bg-surface, #FFFFFF);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.friend-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent-terracotta, #D94E28);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.friend-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.friend-card-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.friend-card-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.friend-card-role {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.friend-card-phone {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.friend-coop-stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg-surface-secondary, rgba(0, 0, 0, 0.03));
+  border-radius: 6px;
+}
+
+.friend-coop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-terracotta, #D94E28);
+}
+
+.friend-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.friend-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #15803D;
+  flex-shrink: 0;
+}
+
+.friend-status-text {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-categories-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cat-pill-micro {
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.friend-card-actions {
+  margin-top: auto;
+}
+
+.btn-friend-action {
+  font-size: 0.76rem;
+  padding: 6px 10px;
+}
+
+/* Co-Op Friend Modal */
+.coop-friend-dialog {
+  max-width: 480px;
+}
+
+.coop-modal-body {
+  padding: 12px 0;
+}
+
+.coop-shift-preview {
+  padding: 10px 12px;
+  background: var(--bg-surface-secondary, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: 14px;
+}
+
+.coop-shift-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.coop-shift-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.coop-modal-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+}
+
+.coop-friends-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.coop-friend-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.coop-friend-option:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
+}
+
+.coop-friend-option.selected {
+  border-color: var(--accent-terracotta, #D94E28);
+  background: rgba(217, 78, 40, 0.06);
+}
+
+.coop-friend-option-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coop-friend-option-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-terracotta, #D94E28);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.coop-friend-option-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.coop-friend-option-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.coop-friend-option-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.coop-friend-option-check {
+  color: var(--accent-terracotta, #D94E28);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.coop-friend-option.selected .coop-friend-option-check {
+  opacity: 1;
+}
+
+.coop-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
 }

@@ -33,7 +33,43 @@
           name: 'Дмитрий М.',
           phone: '+7 (917) 111-22-33',
           city: 'Самара',
-          createdAt: '10.10.2026'
+          createdAt: '10.10.2026',
+          specialization: 'Склад / Грузчик',
+          rating: 4.78,
+          shifts: 8
+        },
+        {
+          id: 3,
+          role: 'worker',
+          name: 'Максим Волков',
+          phone: '+7 (927) 654-32-10',
+          city: 'Самара',
+          createdAt: '01.09.2026',
+          specialization: 'Склад / ПВЗ',
+          rating: 4.94,
+          shifts: 19
+        },
+        {
+          id: 4,
+          role: 'worker',
+          name: 'Артём Самойлов',
+          phone: '+7 (937) 900-44-55',
+          city: 'Самара',
+          createdAt: '15.08.2026',
+          specialization: 'Курьер / Участок',
+          rating: 4.91,
+          shifts: 15
+        },
+        {
+          id: 5,
+          role: 'worker',
+          name: 'Кирилл Демидов',
+          phone: '+7 (927) 210-77-88',
+          city: 'Самара',
+          createdAt: '05.07.2026',
+          specialization: 'Монтаж / Ремонт',
+          rating: 4.89,
+          shifts: 11
         },
         {
           id: 101,
@@ -82,16 +118,57 @@
         },
         2: {
           userId: 2,
-          baseCompletedShifts: 1,
-          rating: 4.70,
+          baseCompletedShifts: 8,
+          rating: 4.78,
           tier: 'standard',
           taxStatus: 'npd',
-          npdVerifiedAt: '12.10.2026',
+          npdVerifiedAt: '10.10.2026',
           payoutAccount: 'Сбербанк •••• 1094 (СБП)',
           wallet: { available: 1900, hold72h: 0, pending: 0 },
           onboarding: { form: true, npd: true, sbp: true }
+        },
+        3: {
+          userId: 3,
+          baseCompletedShifts: 19,
+          rating: 4.94,
+          tier: 'pro',
+          taxStatus: 'npd',
+          npdVerifiedAt: '01.09.2026',
+          payoutAccount: 'Т-Банк •••• 9921 (СБП)',
+          wallet: { available: 5200, hold72h: 0, pending: 0 },
+          onboarding: { form: true, npd: true, sbp: true }
+        },
+        4: {
+          userId: 4,
+          baseCompletedShifts: 15,
+          rating: 4.91,
+          tier: 'pro',
+          taxStatus: 'npd',
+          npdVerifiedAt: '15.08.2026',
+          payoutAccount: 'Альфа-Банк •••• 3341 (СБП)',
+          wallet: { available: 4100, hold72h: 0, pending: 0 },
+          onboarding: { form: true, npd: true, sbp: true }
+        },
+        5: {
+          userId: 5,
+          baseCompletedShifts: 11,
+          rating: 4.89,
+          tier: 'standard',
+          taxStatus: 'npd',
+          npdVerifiedAt: '05.07.2026',
+          payoutAccount: 'ВТБ •••• 7712 (СБП)',
+          wallet: { available: 3300, hold72h: 0, pending: 0 },
+          onboarding: { form: true, npd: true, sbp: true }
         }
       },
+
+      // Список друзей-напарников текущего исполнителя в Самаре
+      friends: [
+        { userId: 2, name: 'Дмитрий М.', phone: '+7 (917) 111-22-33', rating: '4.78', shifts: 8, coOpCount: 3, CoOpCount: 3, roleTag: 'Склад · Погрузка', statusText: 'Уже записан на смену сегодня', allowedCategories: ['Физическая помощь', 'Склад/Ритейл'] },
+        { userId: 3, name: 'Максим Волков', phone: '+7 (927) 654-32-10', rating: '4.94', shifts: 19, coOpCount: 5, CoOpCount: 5, roleTag: 'ПВЗ · ТСД-комплектовка', statusText: 'Свободен · Готов выйти за компанию', allowedCategories: ['ПВЗ', 'Склад/Ритейл', 'Физическая помощь'] },
+        { userId: 4, name: 'Артём Самойлов', phone: '+7 (937) 900-44-55', rating: '4.91', shifts: 15, coOpCount: 2, CoOpCount: 2, roleTag: 'Курьер · Участок', statusText: 'Свободен после 14:00', allowedCategories: ['Курьер', 'Помощь на участке', 'Физическая помощь'] },
+        { userId: 5, name: 'Кирилл Демидов', phone: '+7 (927) 210-77-88', rating: '4.89', shifts: 11, coOpCount: 1, CoOpCount: 1, roleTag: 'Сборка мебели · Склад', statusText: 'Свободен завтра', allowedCategories: ['Мелкий ремонт', 'Склад/Ритейл'] }
+      ],
 
       // Профили заказчиков (3 профиля с чистым разделением)
       employerProfiles: {
@@ -137,7 +214,26 @@
           'course_Мелкий ремонт': { courseId: 'course_Мелкий ремонт', version: 1, status: 'passed', bestScore: 4, passedAt: '02.02.2026', validUntil: '02.02.2027' }
         },
         2: {
-          'safe_intro': { courseId: 'safe_intro', version: 1, status: 'passed', bestScore: 4, passedAt: '12.10.2026', validUntil: '12.10.2027' }
+          'safe_intro': { courseId: 'safe_intro', version: 1, status: 'passed', bestScore: 4, passedAt: '12.10.2026', validUntil: '12.10.2027' },
+          'course_Физическая помощь': { courseId: 'course_Физическая помощь', version: 1, status: 'passed', bestScore: 5, passedAt: '12.10.2026', validUntil: '12.10.2027' },
+          'course_Склад/Ритейл': { courseId: 'course_Склад/Ритейл', version: 1, status: 'passed', bestScore: 5, passedAt: '14.10.2026', validUntil: '14.10.2027' }
+        },
+        3: {
+          'safe_intro': { courseId: 'safe_intro', version: 1, status: 'passed', bestScore: 5, passedAt: '01.09.2026', validUntil: '01.09.2027' },
+          'course_ПВЗ': { courseId: 'course_ПВЗ', version: 1, status: 'passed', bestScore: 5, passedAt: '02.09.2026', validUntil: '02.09.2027' },
+          'course_Склад/Ритейл': { courseId: 'course_Склад/Ритейл', version: 1, status: 'passed', bestScore: 5, passedAt: '03.09.2026', validUntil: '03.09.2027' },
+          'course_Физическая помощь': { courseId: 'course_Физическая помощь', version: 1, status: 'passed', bestScore: 5, passedAt: '04.09.2026', validUntil: '04.09.2027' }
+        },
+        4: {
+          'safe_intro': { courseId: 'safe_intro', version: 1, status: 'passed', bestScore: 5, passedAt: '15.08.2026', validUntil: '15.08.2027' },
+          'course_Курьер': { courseId: 'course_Курьер', version: 1, status: 'passed', bestScore: 5, passedAt: '16.08.2026', validUntil: '16.08.2027' },
+          'course_Помощь на участке': { courseId: 'course_Помощь на участке', version: 1, status: 'passed', bestScore: 5, passedAt: '17.08.2026', validUntil: '17.08.2027' },
+          'course_Физическая помощь': { courseId: 'course_Физическая помощь', version: 1, status: 'passed', bestScore: 4, passedAt: '18.08.2026', validUntil: '18.08.2027' }
+        },
+        5: {
+          'safe_intro': { courseId: 'safe_intro', version: 1, status: 'passed', bestScore: 5, passedAt: '05.07.2026', validUntil: '05.07.2027' },
+          'course_Мелкий ремонт': { courseId: 'course_Мелкий ремонт', version: 1, status: 'passed', bestScore: 5, passedAt: '06.07.2026', validUntil: '06.07.2027' },
+          'course_Склад/Ритейл': { courseId: 'course_Склад/Ритейл', version: 1, status: 'passed', bestScore: 4, passedAt: '07.07.2026', validUntil: '07.07.2027' }
         }
       },
 
@@ -166,6 +262,8 @@
           perks: ['Рохля и тележки выдаются', 'Спецодежда на месте', 'Тёплый бокс'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 4,
+          assignedWorkerIds: [2],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -193,6 +291,8 @@
           perks: ['Грузовой лифт работает', 'Чай и вода на месте', 'СБП 15 мин'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -220,6 +320,8 @@
           perks: ['Тёплый ПВЗ', 'Чайный уголок', 'Шаговая доступность метро'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 2,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -247,6 +349,8 @@
           perks: ['Инструмент на месте', 'Светлая квартира', 'Оплата СБП'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 1,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -274,6 +378,8 @@
           perks: ['Обучение ТСД на месте', 'Служебный транспорт от м. Победа', 'Обед в столовой'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 4,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -301,6 +407,8 @@
           perks: ['Удобный район', 'Лёгкие посылки до 4 кг', 'Оплата СБП'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 1,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -328,6 +436,8 @@
           perks: ['Без подъёма по лестнице', 'СБП сразу', 'Чистый объект'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 4,
+          assignedWorkerIds: [2],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -355,6 +465,8 @@
           perks: ['Тёплый склад', 'Перчатки выдаются', 'СБП 15 мин'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 5,
+          assignedWorkerIds: [3],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -382,6 +494,8 @@
           perks: ['Оборудованное рабочее место', 'Кондиционер', 'СБП выплата'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -409,6 +523,8 @@
           perks: ['Материалы куплены', 'Доступ к стояку открыт', 'Быстрый расчёт'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 1,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -436,6 +552,8 @@
           perks: ['Работа в паре', 'Спецодежда на объекте', 'Парковка'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -463,6 +581,8 @@
           perks: ['Тёплый зал', 'Спецодежда выдаётся', 'Скидка на обед'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -490,6 +610,8 @@
           perks: ['Бензин и леска на даче', 'Вода и тень', 'Свежий воздух'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 2,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -517,6 +639,8 @@
           perks: ['Инвентарь на месте', 'Спецодежда', 'Официальный чек'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 2,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -544,6 +668,8 @@
           perks: ['Утренняя смена', 'Кофемашина', 'СБП 15 мин'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -571,6 +697,8 @@
           perks: ['Стремянка выдаётся', 'Чай с пирожками', 'Оплата сразу'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 2,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -598,6 +726,8 @@
           perks: ['Рохли исправны', 'Инструктаж 5 мин', 'СБП сразу'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 3,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -625,6 +755,8 @@
           perks: ['У вокзала', 'Удобная транспортная развязка', 'СБП 15 мин'],
           status: 'searching',
           assignedWorkerId: null,
+          slotsTotal: 2,
+          assignedWorkerIds: [],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         }
