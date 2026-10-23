@@ -3519,7 +3519,7 @@ textarea.form-control {
 
 @media (max-width: 767px) {
   .app-body-content {
-    padding: 16px;
+    padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 120px) 16px;
   }
 
   .chats-split-grid {
@@ -3590,7 +3590,7 @@ textarea.form-control {
   }
 
   .app-body-content {
-    padding: 12px 10px !important;
+    padding: 12px 10px calc(env(safe-area-inset-bottom, 0px) + 120px) 10px !important;
     overflow-x: hidden !important;
     max-width: 100vw !important;
   }
