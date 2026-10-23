@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Eluma — Кабинет исполнителя (Самара)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body class="app-body">
+  <div class="app-root" id="appRoot">
+
+    <!-- ДЕСКТОПНЫЙ САЙДБАР ИСПОЛНИТЕЛЯ -->
+    <aside class="desktop-sidebar" id="desktopSidebar">
+      <div class="d-sidebar-header">
+        <a href="worker.html" class="d-brand-box">
+          <div class="d-logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Верхняя балка -->
+              <rect x="4" y="5" width="10" height="2.8" rx="1.4" fill="currentColor"/>
+              <!-- Сигнальная точка фокуса -->
+              <circle cx="18" cy="6.4" r="1.8" fill="#D94E28"/>
+              <!-- Средняя балка сдвига -->
+              <rect x="4" y="10.6" width="12" height="2.8" rx="1.4" fill="currentColor"/>
+              <!-- Нижняя базовая балка -->
+              <rect x="4" y="16.2" width="16" height="2.8" rx="1.4" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="d-brand-text">
+            <span class="d-brand-name">Eluma</span>
+            <span class="d-brand-badge">Кабинет исполнителя</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Виджет кошелька исполнителя -->
+      <div class="d-balance-widget" id="dSidebarBalance" onclick="window.Eluma.Worker.navigate('payouts')">
+        <div class="d-balance-header">
+          <span class="d-balance-label">Баланс кошелька</span>
+        </div>
+        <div class="d-balance-value-row">
+          <strong class="d-balance-amount" id="sidebarWorkerBalance">14 850 ₽</strong>
+        </div>
+        <div class="d-balance-action-link">
+          <span>Вывод по СБП (15 мин)</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- Навигация исполнителя -->
+      <nav class="d-sidebar-nav" id="dNavWorker">
+        <button type="button" class="d-nav-item active" data-screen="home" onclick="window.Eluma.Worker.navigate('home')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Смены в Самаре</span>
+        </button>
+        <button type="button" class="d-nav-item" data-screen="my" onclick="window.Eluma.Worker.navigate('my')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Мои записи</span>
+        </button>
+        <button type="button" class="d-nav-item" data-screen="payouts" onclick="window.Eluma.Worker.navigate('payouts')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span>Выплаты и доход</span>
+        </button>
+        <button type="button" class="d-nav-item" data-screen="chats" onclick="window.Eluma.Worker.navigate('chats')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Чаты по заказам</span>
+        </button>
+        <button type="button" class="d-nav-item" data-screen="profile" onclick="window.Eluma.Worker.navigate('profile')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Обучение и профиль</span>
+        </button>
+      </nav>
+
+      <div class="d-sidebar-footer">
+        <div class="account-switcher-pod" id="accountSwitcherPod" onclick="window.Eluma.UI.openAccountSwitcherModal()" title="Переключить демо-профиль">
+          <div class="pod-avatar" id="sidebarWorkerAvatar">АК</div>
+          <div class="pod-info">
+            <div class="pod-name-row">
+              <span class="pod-name" id="sidebarWorkerName">Алексей К.</span>
+            </div>
+            <div class="pod-meta-row">
+              <span class="pod-rating" id="sidebarWorkerRating">4.96 · 12 смен</span>
+            </div>
+          </div>
+          <button type="button" class="pod-switch-btn" aria-label="Сменить профиль">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <a href="index.html?auth=1" class="d-logout-btn" title="Выйти в выбор кабинета" onclick="localStorage.removeItem('eluma_session_active'); window.location.href='index.html?auth=1'; return false;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Выйти</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ОСНОВНАЯ КОЛОНКА КАБИНЕТА ИСПОЛНИТЕЛЯ -->
+    <div class="app-content-wrapper">
+      <!-- Шапка кабинета -->
+      <header class="app-header">
+        <div class="header-inner">
+          <div class="header-title-box">
+            <h1 class="header-screen-title" id="headerScreenTitle">Смены в Самаре</h1>
+            <span class="header-sub-count" id="headerSubCount">18 доступных смен</span>
+          </div>
+
+          <div class="header-actions">
+            <!-- Динамический бейдж активной смены в работе -->
+            <button type="button" class="header-active-shift-pill" id="headerActiveShiftBadge" style="display:none;" onclick="window.Eluma.Worker.openCurrentActiveShift()" title="Перейти к текущей смене в работе"></button>
+
+            <button type="button" class="theme-toggle-pill" onclick="window.Eluma.UI.toggleTheme()" title="Сменить тему">
+              <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+        <!-- ЭКРАНЫ КАБИНЕТА ИСПОЛНИТЕЛЯ -->
+        <main class="app-body-content">
+
+          <!-- 1. ЭКРАН: ЛЕНТА СМЕН (HOME) -->
+          <section class="screen active" id="scr-wrk-home">
+            <!-- Верхний 1-строчный поисково-сортировочный бар Самары -->
+            <div class="feed-top-toolbar">
+              <!-- Мобильный переключатель режима: Список / На карте Самары (< 960px) -->
+              <div class="mobile-map-toggle-bar">
+                <button type="button" class="view-mode-btn active" id="btnViewList" onclick="window.Eluma.Worker.setFeedViewMode('list')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                  <span>Список</span>
+                </button>
+                <button type="button" class="view-mode-btn" id="btnViewMap" onclick="window.Eluma.Worker.setFeedViewMode('map')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                  <span>На карте Самары</span>
+                </button>
+              </div>
+
+              <!-- Стремительная 1-строчная строка: Поиск + Сводка + Сортировка (44px) -->
+              <div class="mp-top-search-bar">
+                <div class="search-input-box">
+                  <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="workerSearchInput" class="search-input" placeholder="Поиск по названию смены, улице или заказчику в Самаре..." oninput="window.Eluma.Worker.setSearchQuery(this.value)">
+                </div>
+
+                <div class="filter-summary-line" id="workerFilterSummaryLine">
+                  <span>Загрузка доступных смен...</span>
+                </div>
+
+                <div class="filter-sort-wrap custom-sort-dropdown" id="workerSortDropdownWrap">
+                  <select id="workerSortSelect" class="filter-sort-select" onchange="window.Eluma.Worker.setSortBy(this.value)" style="display: none;" title="Сортировка смен">
+                    <option value="distance">По близости (км)</option>
+                    <option value="rate">По ставке (₽/ч ↓)</option>
+                    <option value="price">По выплате (₽ ↓)</option>
+                    <option value="urgent">Сначала срочные</option>
+                  </select>
+                  <button type="button" class="sort-dropdown-trigger" id="sortDropdownTrigger" onclick="window.Eluma.Worker.toggleSortDropdown(event)" aria-haspopup="listbox" aria-expanded="false" title="Сортировка смен">
+                    <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="12" y2="12"/><line x1="4" y1="18" x2="8" y2="18"/><polyline points="15 15 18 18 21 15"/><line x1="18" y1="9" x2="18" y2="18"/></svg>
+                    <span class="sort-current-label" id="sortCurrentLabel">По близости (км)</span>
+                    <svg class="sort-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="sort-dropdown-menu" id="sortDropdownMenu" role="listbox">
+                    <div class="sort-dropdown-item active" data-val="distance" onclick="window.Eluma.Worker.selectSortOption('distance', 'По близости (км)')">
+                      <span class="sort-item-text">По близости (км)</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                    <div class="sort-dropdown-item" data-val="rate" onclick="window.Eluma.Worker.selectSortOption('rate', 'По ставке (₽/ч ↓)')">
+                      <span class="sort-item-text">По ставке (₽/ч ↓)</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                    <div class="sort-dropdown-item" data-val="price" onclick="window.Eluma.Worker.selectSortOption('price', 'По выплате (₽ ↓)')">
+                      <span class="sort-item-text">По выплате (₽ ↓)</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                    <div class="sort-dropdown-item" data-val="urgent" onclick="window.Eluma.Worker.selectSortOption('urgent', 'Сначала срочные')">
+                      <span class="sort-item-text">Сначала срочные</span>
+                      <span class="sort-item-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Трёхколоночная маркетплейс-сетка: Фильтры слева | Лента смен | Карта Самары -->
+            <div class="worker-split-view worker-marketplace-grid">
+              <!-- КОЛОНКА 1 (СЛЕВА): Вертикальная панель фильтров маркетплейса (236px) -->
+              <aside class="mp-filter-sidebar" id="workerFilterPanel">
+                <div class="mp-filter-head">
+                  <span class="mp-filter-title">Фильтры</span>
+                  <button type="button" class="mp-reset-link" onclick="window.Eluma.Worker.resetFilters()">Сбросить</button>
+                </div>
+
+                <!-- Группа 1: Направление (Категория) со счётчиками -->
+                <div class="mp-filter-group">
+                  <span class="mp-group-title">Направление</span>
+                  <div class="category-pills-row mp-cat-list" id="workerCatFilter">
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip active" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('all');">
+                      <span class="mp-cat-label">Все категории</span>
+                      <span class="mp-cat-count" data-cat="all">18</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('ПВЗ');">
+                      <span class="mp-cat-label">ПВЗ</span>
+                      <span class="mp-cat-count" data-cat="ПВЗ">3</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('Помощь на участке');">
+                      <span class="mp-cat-label">Помощь на участке</span>
+                      <span class="mp-cat-count" data-cat="Помощь на участке">2</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('Склад/Ритейл');">
+                      <span class="mp-cat-label">Склад/Ритейл</span>
+                      <span class="mp-cat-count" data-cat="Склад/Ритейл">4</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('Физическая помощь');">
+                      <span class="mp-cat-label">Физическая помощь</span>
+                      <span class="mp-cat-count" data-cat="Физическая помощь">3</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('Мелкий ремонт');">
+                      <span class="mp-cat-label">Мелкий ремонт</span>
+                      <span class="mp-cat-count" data-cat="Мелкий ремонт">3</span>
+                    </button>
+                    <button type="button" class="mp-cat-btn category-pill cat-chip category-chip" onclick="document.querySelectorAll('.cat-chip, .category-chip, .category-pill').forEach(c=>c.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.setCategory('Курьер');">
+                      <span class="mp-cat-label">Курьер</span>
+                      <span class="mp-cat-count" data-cat="Курьер">3</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Группа 2: Гео-радар и район Самары -->
+                <div class="mp-filter-group" id="workerGeoRadarConsole">
+                  <span class="mp-group-title">Опорная точка в Самаре</span>
+                  <div class="radar-hub-picker mp-hub-picker">
+                    <svg class="radar-pin-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <select id="workerRadarHubSelect" class="radar-hub-select mp-select" onchange="window.Eluma.Worker.onRadarHubChange(this.value)" title="Опорная гео-точка Самары">
+                      <option value="alabinskaya">ст.м. Алабинская</option>
+                      <option value="cosmoport">ТРК Космопорт</option>
+                      <option value="kuybyshev_sq">пл. Куйбышева</option>
+                      <option value="viva_land">ТРК Вива Лэнд</option>
+                      <option value="moscow_sh">Московское ш.</option>
+                      <option value="samarskiy">Хлебная пл.</option>
+                    </select>
+                  </div>
+                  <span class="mp-group-sub">Радиус поиска</span>
+                  <div class="radar-radius-pills mp-radius-grid" id="radarRadiusPills">
+                    <button type="button" class="radar-pill active" data-radius="all" onclick="window.Eluma.Worker.setRadarRadius('all')">Все</button>
+                    <button type="button" class="radar-pill" data-radius="1.5" onclick="window.Eluma.Worker.setRadarRadius(1.5)">1.5 км</button>
+                    <button type="button" class="radar-pill" data-radius="3" onclick="window.Eluma.Worker.setRadarRadius(3)">3 км</button>
+                    <button type="button" class="radar-pill" data-radius="5" onclick="window.Eluma.Worker.setRadarRadius(5)">5 км</button>
+                  </div>
+                </div>
+
+                <!-- Группа 3: Выплата и ставка, ₽ -->
+                <div class="mp-filter-group">
+                  <span class="mp-group-title">Выплата за смену, ₽</span>
+                  <div class="mp-price-inputs-row">
+                    <input type="number" id="filterMinPriceInput" class="mp-num-input" placeholder="От 1 500" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
+                    <input type="number" id="filterMaxPriceInput" class="mp-num-input" placeholder="До 5 000" min="0" step="100" oninput="window.Eluma.Worker.onPriceRangeChange()">
+                  </div>
+                  <span class="mp-group-sub">Ставка в час</span>
+                  <div class="mp-segmented-row" id="rateFilterRow">
+                    <button type="button" class="mp-segment-btn active" data-rate="0" onclick="window.Eluma.Worker.setRateFilter(0)">Любая</button>
+                    <button type="button" class="mp-segment-btn" data-rate="800" onclick="window.Eluma.Worker.setRateFilter(800)">800+ ₽</button>
+                    <button type="button" class="mp-segment-btn" data-rate="900" onclick="window.Eluma.Worker.setRateFilter(900)">900+ ₽</button>
+                  </div>
+                </div>
+
+                <!-- Группа 4: День и длительность -->
+                <div class="mp-filter-group">
+                  <span class="mp-group-title">День выхода</span>
+                  <div class="mp-segmented-row" id="dayFilterRow">
+                    <button type="button" class="mp-segment-btn active" data-day="all" onclick="window.Eluma.Worker.setDayFilter('all')">Все дни</button>
+                    <button type="button" class="mp-segment-btn" data-day="today" onclick="window.Eluma.Worker.setDayFilter('today')">Сегодня</button>
+                    <button type="button" class="mp-segment-btn" data-day="tomorrow" onclick="window.Eluma.Worker.setDayFilter('tomorrow')">Завтра</button>
+                  </div>
+                  <span class="mp-group-sub">Длительность смены</span>
+                  <div class="mp-segmented-row" id="durationFilterRow">
+                    <button type="button" class="mp-segment-btn active" data-dur="all" onclick="window.Eluma.Worker.setDurationFilter('all')">Любая</button>
+                    <button type="button" class="mp-segment-btn" data-dur="short" onclick="window.Eluma.Worker.setDurationFilter('short')">До 3 ч</button>
+                    <button type="button" class="mp-segment-btn" data-dur="long" onclick="window.Eluma.Worker.setDurationFilter('long')">4+ ч</button>
+                  </div>
+                </div>
+
+                <!-- Группа 5: Условия смены -->
+                <div class="mp-filter-group">
+                  <span class="mp-group-title">Условия</span>
+                  <div class="mp-checkbox-list">
+                    <label class="mp-check-row">
+                      <input type="checkbox" id="chkOnlyEligible" onchange="window.Eluma.Worker.toggleFilterChip('onlyEligible')">
+                      <span class="mp-check-custom"></span>
+                      <span class="mp-check-label">С моим допуском</span>
+                    </label>
+                    <label class="mp-check-row">
+                      <input type="checkbox" id="chkOnlyNegotiable" onchange="window.Eluma.Worker.toggleFilterChip('onlyNegotiable')">
+                      <span class="mp-check-custom"></span>
+                      <span class="mp-check-label">Возможен торг (P2P)</span>
+                    </label>
+                    <label class="mp-check-row">
+                      <input type="checkbox" id="chkOnlyBusiness" onchange="window.Eluma.Worker.toggleFilterChip('onlyBusiness')">
+                      <span class="mp-check-custom"></span>
+                      <span class="mp-check-label">Бизнес-заказчики</span>
+                    </label>
+                  </div>
+                </div>
+              </aside>
+
+              <div class="split-feed-col" id="splitFeedCol">
+                <!-- Виджет ближайшей смены -->
+                <div class="nearest-booking-widget" id="workerNearestBookingWidget"></div>
+
+                <!-- Список карточек смен -->
+                <div class="worker-tasks-list" id="workerTasksList"></div>
+              </div>
+
+              <!-- Правая колонка карты Самары -->
+              <div class="split-map-col" id="splitMapCol">
+                <button type="button" class="mobile-map-back-btn" onclick="window.Eluma.Worker.setFeedViewMode('list')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  <span>Назад к списку смен</span>
+                </button>
+                <div class="sticky-map-wrapper">
+                  <div class="map-container" id="samaraLeafletMap"></div>
+                  <div class="map-hover-preview-card" id="mapHoverPreviewCard" onmouseenter="window.Eluma.Worker.cancelHideMapHoverCard()" onmouseleave="window.Eluma.Worker.scheduleHideMapHoverCard()"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. ЭКРАН: МОИ ЗАПИСИ (MY) -->
+          <section class="screen" id="scr-wrk-my">
+            <div class="my-shifts-container">
+              <div class="my-shifts-tabs">
+                <button type="button" class="my-tab-btn active" id="tabActiveShifts" onclick="document.querySelectorAll('.my-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.myTab='active'; window.Eluma.Worker.navigate('my');">
+                  <span>Активные смены</span>
+                  <span class="tab-count-badge" id="myActiveCountBadge">0</span>
+                </button>
+                <button type="button" class="my-tab-btn" id="tabArchiveShifts" onclick="document.querySelectorAll('.my-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.Eluma.Worker.myTab='archive'; window.Eluma.Worker.navigate('my');">
+                  <span>Архив выполненных</span>
+                  <span class="tab-count-badge" id="myArchiveCountBadge">0</span>
+                </button>
+              </div>
+              <div class="worker-tasks-list" id="workerMyTasksList"></div>
+            </div>
+          </section>
+
+          <!-- 3. ЭКРАН: ВЫПЛАТЫ (PAYOUTS) -->
+          <section class="screen" id="scr-wrk-payouts">
+            <div class="payouts-dashboard-wrap">
+              <div class="payout-balance-hero">
+                <span class="payout-hero-label">Доступно к выводу по СБП</span>
+                <strong class="payout-hero-amount" id="payoutAvailableAmount">14 850 ₽</strong>
+                <span class="payout-hero-sub">Без комиссии на карты Т-Банк, Сбер, ВТБ</span>
+                <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Worker.withdrawAvailablePayout()">
+                  Вывести на карту СБП (15 мин)
+                </button>
+              </div>
+
+              <!-- Плашка гарантийного холда 72 ч для статуса Стандарт/Новичок -->
+              <div class="payout-hold-banner" id="payoutHoldBanner" style="display:none">
+                <div class="hold-banner-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="hold-banner-text">
+                  <span class="hold-banner-title">На гарантийном удержании (72 ч): <strong id="payoutHoldAmount">0 ₽</strong></span>
+                  <span class="hold-banner-sub">Доступно к выводу: <strong id="payoutHoldAvailable">0 ₽</strong> • Защита качества для новых исполнителей</span>
+                </div>
+              </div>
+
+              <div class="payout-stats-row">
+                <div class="payout-stat-card">
+                  <span class="stat-card-label">Выполнено смен</span>
+                  <strong class="stat-card-value" id="incomeShiftsCount">12</strong>
+                </div>
+                <div class="payout-stat-card">
+                  <span class="stat-card-label">Налог НПД (4-6%)</span>
+                  <strong class="stat-card-value">Уплачивается в ФНС</strong>
+                </div>
+              </div>
+
+              <div class="payout-history-section">
+                <h3 class="section-lead-title">История начислений и чеки ФНС</h3>
+                <div class="payout-history-list" id="payoutHistoryList"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. ЭКРАН: ЧАТЫ (CHATS) -->
+          <section class="screen" id="scr-wrk-chats">
+            <div class="chats-screen-wrap">
+              <h3 class="section-lead-title">Диалоги с заказчиками</h3>
+              <div class="chats-split-grid" id="wrkChatsSplitGrid">
+                <div class="chats-list-col">
+                  <div class="chats-dialogs-list" id="wrkChatsList"></div>
+                </div>
+                <div class="chat-active-dialog-col" id="wrkChatActiveCol">
+                  <div class="chat-empty-selection" id="wrkChatEmptySelection">
+                    <p style="color: var(--text-muted); text-align: center; padding: 40px 16px;">Выберите диалог из списка слева</p>
+                  </div>
+                  <div class="chat-dialog-panel" id="wrkChatDialogPanel" style="display:none;"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. ЭКРАН: ПРОФИЛЬ И «ОБУЧЕНИЕ И ДОПУСКИ» (PROFILE) -->
+          <section class="screen" id="scr-wrk-profile">
+            <div class="profile-screen-wrap">
+              <!-- Карточка пользователя -->
+              <div class="profile-header-card">
+                <div class="prof-avatar-circle">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="prof-info-box">
+                  <h2 class="prof-name" id="profWorkerName">Алексей К.</h2>
+                  <span class="prof-phone" id="profWorkerPhone">+7 (927) 700-12-34</span>
+                  <div class="prof-badges-line">
+                    <span class="badge-npd-verified">Самозанятый (НПД)</span>
+                    <span class="badge-rating-pill">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706" stroke="#D97706" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span id="profRatingValue">4.96</span>
+                    </span>
+                    <span class="badge-shifts-pill"><span id="profCompletedShifts">12</span> смен</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Налоговый статус НПД и реквизиты СБП -->
+              <div class="worker-npd-summary-panel">
+                <div class="npd-summary-main">
+                  <div class="npd-status-indicator">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <div class="npd-status-texts">
+                      <div class="npd-status-title">Статус плательщика НПД подтверждён в ФНС</div>
+                      <div class="npd-status-desc">Налог 4–6% · Выплаты через СБП за 15 минут</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-compact-npd" onclick="window.Eluma.UI.openNpdCabinetModal()">
+                    <span>Налоговый кабинет</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Раздел: Каталог курсов допуска -->
+              <div class="courses-catalog-section">
+                <div class="section-header-row">
+                  <div>
+                    <h3 class="section-lead-title">Обучение и допуски к сменам (Ozon-style)</h3>
+                    <p class="section-sub-desc">Пройдите бесплатный короткий курс (7 мин) и получите официальный допуск на 12 месяцев</p>
+                  </div>
+                </div>
+                <div class="courses-grid" id="profCoursesList"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. ЭКРАН: ДЕТАЛИ СМЕНЫ (DETAIL) -->
+          <section class="screen" id="scr-wrk-detail">
+            <div class="worker-detail-wrap">
+              <div class="detail-top-nav-line">
+                <button type="button" class="btn-back-link" onclick="window.Eluma.Worker.navigate('home')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  <span>К сменам</span>
+                </button>
+                <div id="wrkDetailStatusBadge"></div>
+              </div>
+
+              <div class="detail-photo-card" id="wrkDetailPhotoWrap">
+                <img id="wrkDetailPhotoImg" class="detail-photo-img" src="" alt="Фото объекта">
+              </div>
+
+              <div class="detail-header-card">
+                <h2 class="detail-order-title" id="wrkDetailTitle">Название смены</h2>
+                <div class="detail-price-row">
+                  <strong class="detail-order-price" id="wrkDetailPrice">0 ₽</strong>
+                  <span class="detail-order-hourly" id="wrkDetailPayoutTierBadge">Смена 8 ч • Выплата за 15 мин по СБП</span>
+                </div>
+                <div class="detail-briefing-badge-box" id="wrkDetailBriefingBadgeContainer"></div>
+              </div>
+
+              <div id="wrkDetailReworkBanner" style="display:none;margin-top:12px;"></div>
+              <div id="wrkDetailCounterOfferBanner" style="display:none;margin-top:12px;"></div>
+
+              <!-- Стейпер сделки Eluma Safe -->
+              <div class="safe-stepper-card">
+                <div class="safe-stepper-bar">
+                  <div class="step-circle completed" id="ws-step-1">1</div>
+                  <div class="step-line" id="ws-line-1"></div>
+                  <div class="step-circle" id="ws-step-2">2</div>
+                  <div class="step-line" id="ws-line-2"></div>
+                  <div class="step-circle" id="ws-step-3">3</div>
+                  <div class="step-line" id="ws-line-3"></div>
+                  <div class="step-circle" id="ws-step-4">4</div>
+                </div>
+                <div class="stepper-labels-row">
+                  <span>Эскроу</span>
+                  <span>GPS Самара</span>
+                  <span>Фотоотчёт</span>
+                  <span>Выплата</span>
+                </div>
+              </div>
+
+              <!-- Детали и условия -->
+              <div class="detail-info-block">
+                <div class="info-row-item">
+                  <span class="info-label">Заказчик:</span>
+                  <strong class="info-val" id="wrkDetailCustomer">-</strong>
+                </div>
+                <div class="info-row-item">
+                  <span class="info-label">Адрес:</span>
+                  <span class="info-val" id="wrkDetailDistrict">-</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="info-label">Время:</span>
+                  <span class="info-val" id="wrkDetailTime">-</span>
+                </div>
+                <div class="info-desc-box">
+                  <span class="info-label">Описание задачи:</span>
+                  <p id="wrkDetailDesc">-</p>
+                </div>
+              </div>
+
+              <!-- Блок фотофиксации ДО и ПОСЛЕ -->
+              <div class="detail-proofs-card">
+                <div class="proofs-card-head">
+                  <strong>Фотофиксация ДО и ПОСЛЕ</strong>
+                  <span class="proofs-badge" id="wrkGpsBadge">GPS: Самара</span>
+                </div>
+                <div class="proofs-slots-grid">
+                  <div class="proof-slot" id="slotPreviewBefore"></div>
+                  <div class="proof-slot" id="slotPreviewAfter"></div>
+                </div>
+              </div>
+
+              <!-- Чат по заказу (Eluma Safe) -->
+              <div class="order-chat-box" id="wrkOrderChatBox">
+                <div class="order-chat-header">
+                  <div class="chat-header-info">
+                    <h4 class="chat-header-title">Чат по заказу (Eluma Safe)</h4>
+                    <span class="chat-header-badge">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      <span>Защищённый канал • Без передачи прямых контактов</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="order-chat-messages" id="wrkChatMessages"></div>
+
+                <div class="order-chat-chips">
+                  <span class="chat-chips-label">Быстрые ответы:</span>
+                  <div class="chat-chips-list">
+                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Worker.sendQuickChat('Вышел на точку, буду вовремя')">Вышел на точку, буду вовремя</button>
+                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Worker.sendQuickChat('На месте, прохожу инструктаж')">На месте, прохожу инструктаж</button>
+                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Worker.sendQuickChat('Фотоотчёт загрузил, проверьте')">Фотоотчёт загрузил, проверьте</button>
+                  </div>
+                </div>
+
+                <form class="order-chat-form" id="wrkChatForm" onsubmit="window.Eluma.Worker.handleSendChat(event)">
+                  <input type="text" id="wrkChatInput" class="order-chat-input" placeholder="Написать сообщение по заказу..." autocomplete="off">
+                  <button type="submit" class="order-chat-send-btn" title="Отправить сообщение">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </form>
+              </div>
+
+              <!-- Кнопки действий -->
+              <div class="detail-bottom-actions">
+                <button type="button" class="btn btn-primary-cta" id="wrkActionBtn">Откликнуться</button>
+                <button type="button" class="btn btn-secondary-outline" id="wrkCounterOfferBtn" style="display:none">Предложить свою цену</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. ЭКРАН: ИНТЕРАКТИВНЫЙ ПЛЕЕР КУРСА ДОПУСКА -->
+          <section class="screen" id="scr-wrk-course_player"></section>
+
+        </main>
+
+        <!-- МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ -->
+        <nav class="mobile-bottom-bar" id="mobileBottomBar">
+          <button type="button" class="m-nav-item active" data-screen="home" onclick="window.Eluma.Worker.navigate('home')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Смены</span>
+          </button>
+          <button type="button" class="m-nav-item" data-screen="my" onclick="window.Eluma.Worker.navigate('my')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Записи</span>
+          </button>
+          <button type="button" class="m-nav-item" data-screen="payouts" onclick="window.Eluma.Worker.navigate('payouts')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span>Выплаты</span>
+          </button>
+          <button type="button" class="m-nav-item" data-screen="chats" onclick="window.Eluma.Worker.navigate('chats')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Чаты</span>
+          </button>
+          <button type="button" class="m-nav-item" data-screen="profile" onclick="window.Eluma.Worker.navigate('profile')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Профиль</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+  <!-- МОДАЛЬНЫЕ ОКНА -->
+  <div class="modal-backdrop" id="counterOfferModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Встречное предложение цены</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('counterOfferModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form onsubmit="window.Eluma.Worker.submitCounterOffer(event)">
+        <p class="modal-sub-label">Текущая цена заказчика: <strong id="counterOfferCurrentPrice">0 ₽</strong></p>
+        <div class="form-group">
+          <label>Ваша ставка за смену (₽):</label>
+          <input type="number" id="counterOfferPriceInput" min="300" step="100" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label>Комментарий заказчику:</label>
+          <textarea id="counterOfferCommentInput" class="form-textarea" placeholder="Опишите опыт или инструмент..."></textarea>
+        </div>
+        <div class="modal-actions-grid">
+          <button type="submit" class="btn btn-primary-cta">Отправить предложение</button>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('counterOfferModal')">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="fnsReceiptModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog fns-receipt-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title" id="fnsReceiptNumber">Чек ФНС РФ (НПД)</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('fnsReceiptModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="fns-receipt-body">
+        <div class="fns-receipt-stamp">ФНС РОССИИ • ПРИЛОЖЕНИЕ «МОЙ НАЛОГ»</div>
+        <div class="fns-row"><span class="fns-label">Дата выплаты:</span><strong id="fnsReceiptDate">-</strong></div>
+        <div class="fns-row"><span class="fns-label">Услуга:</span><span id="fnsReceiptTaskTitle">-</span></div>
+        <div class="fns-row"><span class="fns-label">Сумма вознаграждения:</span><strong id="fnsReceiptTotal">0 ₽</strong></div>
+        <div class="fns-big-total"><span id="fnsReceiptBigTotal">0 ₽</span></div>
+      </div>
+      <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('fnsReceiptModal')">Закрыть чек</button>
+    </div>
+  </div>
+
+  <!-- Шторка предпросмотра смены (Slide-Over Drawer) -->
+  <div class="slide-over-backdrop" id="workerOrderDrawerBackdrop" onclick="window.Eluma.Worker.closeOrderDrawer()"></div>
+  <aside class="slide-over-drawer" id="workerOrderDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-header-left">
+        <span class="drawer-category-badge" id="drawerCategoryBadge">Смена</span>
+        <span class="drawer-geo-distance" id="drawerDistanceBadge">1.5 км</span>
+      </div>
+      <button type="button" class="drawer-close-btn" onclick="window.Eluma.Worker.closeOrderDrawer()" aria-label="Закрыть шторку">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-photo-banner" id="drawerPhotoBanner">
+      <img id="drawerPhotoImg" class="drawer-photo-img" src="" alt="Фото объекта">
+    </div>
+    <div class="drawer-body" id="drawerBodyContent">
+      <h2 class="drawer-title" id="drawerOrderTitle">Название смены</h2>
+      <div class="drawer-price-card">
+        <div class="drawer-price-main" id="drawerOrderPrice">0 ₽</div>
+        <div class="drawer-hourly-rate" id="drawerHourlyRate">0 ₽/час</div>
+      </div>
+      <div class="drawer-meta-grid">
+        <div class="drawer-meta-cell">
+          <span class="meta-label">Время:</span>
+          <strong class="meta-val" id="drawerOrderTime">-</strong>
+        </div>
+        <div class="drawer-meta-cell">
+          <span class="meta-label">Адрес:</span>
+          <strong class="meta-val" id="drawerOrderAddress">-</strong>
+        </div>
+        <div class="drawer-meta-cell">
+          <span class="meta-label">Заказчик:</span>
+          <strong class="meta-val" id="drawerOrderCustomer">-</strong>
+        </div>
+        <div class="drawer-meta-cell">
+          <span class="meta-label">Допуск:</span>
+          <span class="drawer-eligibility-tag" id="drawerEligibilityTag">Проверяется</span>
+        </div>
+      </div>
+      <div class="drawer-conflict-warning" id="drawerConflictWarning" style="display:none;"></div>
+      <div class="drawer-desc-block">
+        <h4 class="drawer-section-heading">Описание задач и требований</h4>
+        <p class="drawer-desc-text" id="drawerOrderDesc">-</p>
+      </div>
+      <div class="drawer-guarantee-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Выплата резервируется в эскроу до начала смены. Перевод на карту СБП за 15 минут.</span>
+      </div>
+    </div>
+    <div class="drawer-footer" id="drawerFooterActions">
+      <button type="button" class="btn btn-primary-cta w-full" id="drawerTakeBtn">Взять смену</button>
+      <button type="button" class="btn btn-secondary-outline w-full" id="drawerCounterBtn" style="display:none">Предложить свою цену</button>
+      <button type="button" class="btn btn-secondary-outline danger w-full" id="drawerCancelShiftBtn" style="display:none">Отказаться от смены</button>
+    </div>
+  </aside>
+
+  <!-- Модалка: Налоговый кабинет НПД и СБП -->
+  <div class="modal-backdrop" id="npdTaxCabinetModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog npd-tax-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Кабинет самозанятого (НПД ФНС)</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('npdTaxCabinetModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="npd-tax-body">
+        <div class="npd-tax-status-line">
+          <span class="npd-active-dot"></span>
+          <span>Статус налогоплательщика: <strong>Активен в ФНС России</strong></span>
+        </div>
+        <div class="npd-stats-cards-grid">
+          <div class="npd-summary-card">
+            <span class="npd-card-label">Общий подтверждённый доход:</span>
+            <strong class="npd-card-value" id="npdCabinetTotalEarned">0 ₽</strong>
+          </div>
+          <div class="npd-summary-card highlight">
+            <span class="npd-card-label">Налог к уплате в ФНС:</span>
+            <strong class="npd-card-value accent" id="npdCabinetTaxTotal">0 ₽</strong>
+          </div>
+        </div>
+        <div class="npd-breakdown-table">
+          <div class="npd-table-row">
+            <span>Ставка 4% (заказы от физических лиц):</span>
+            <strong id="npdCabinetTaxFl">0 ₽</strong>
+          </div>
+          <div class="npd-table-row">
+            <span>Ставка 6% (заказы от юр. лиц и ИП):</span>
+            <strong id="npdCabinetTaxUl">0 ₽</strong>
+          </div>
+        </div>
+        <div class="npd-bank-link-section">
+          <h4 class="npd-section-subhead">Счёт для моментальных выплат СБП (0% комиссии)</h4>
+          <div class="form-group">
+            <label class="form-label" for="npdBankSelect">Банк-получатель в Системе быстрых платежей:</label>
+            <select id="npdBankSelect" class="form-select" onchange="window.Eluma.Worker.onSelectPayoutBank(this.value)">
+              <option value="Т-Банк (Тинькофф)">Т-Банк (Тинькофф) • +7 927 ***-12-34</option>
+              <option value="СберБанк">СберБанк • +7 927 ***-12-34</option>
+              <option value="ВТБ">ВТБ • +7 927 ***-12-34</option>
+              <option value="Альфа-Банк">Альфа-Банк • +7 927 ***-12-34</option>
+            </select>
+          </div>
+          <span class="npd-fns-note">Чеки автоматически регистрируются в приложении «Мой налог» Федеральной налоговой службы по закону 422-ФЗ.</span>
+        </div>
+      </div>
+      <div class="modal-actions-grid">
+        <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.UI.closeModal('npdTaxCabinetModal')">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Выбор профиля платформы (Account Switcher) -->
+  <div class="modal-backdrop" id="accountSwitcherModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog account-switcher-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Выбор профиля платформы</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('accountSwitcherModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="modal-sub-label">Мгновенный переход между тестовыми аккаунтами исполнителей и заказчиков Самары:</p>
+      <div class="account-switcher-list" id="accountSwitcherModalList"></div>
+      <div class="modal-actions-grid" style="margin-top:16px;">
+        <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('accountSwitcherModal')">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Распоряжение СБП (Платёжное поручение) -->
+  <div class="modal-backdrop" id="sbpVoucherModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog sbp-voucher-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title" id="sbpVoucherNumber">Распоряжение СБП</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('sbpVoucherModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="sbp-voucher-body">
+        <div class="sbp-stamp-header">
+          <div class="sbp-logo-badge">СБП • БАНК РОССИИ / НСПК</div>
+          <span class="sbp-status-pill">ИСПОЛНЕНО</span>
+        </div>
+        <div class="sbp-voucher-grid">
+          <div class="sbp-row"><span class="sbp-label">Дата операции:</span><strong id="sbpVoucherDate">-</strong></div>
+          <div class="sbp-row"><span class="sbp-label">Банк зачисления:</span><span id="sbpVoucherBank">Т-Банк (Тинькофф)</span></div>
+          <div class="sbp-row"><span class="sbp-label">Получатель:</span><span id="sbpVoucherRecipient">Алексей К. (СМЗ)</span></div>
+          <div class="sbp-row"><span class="sbp-label">Операционный ID:</span><code id="sbpVoucherOpId">SBP-63-SAM-849201</code></div>
+          <div class="sbp-row"><span class="sbp-label">Комиссия СБП:</span><strong>0 ₽ (0%)</strong></div>
+        </div>
+        <div class="sbp-amount-box">
+          <span class="sbp-amount-label">Сумма перевода:</span>
+          <strong class="sbp-amount-val" id="sbpVoucherAmount">14 850 ₽</strong>
+        </div>
+        <div class="sbp-seal-mock">
+          <span class="sbp-seal-text">ШЛЮЗ НСПК МИР • САМАРА • ПРОВЕДЕНО БЕЗАКЦЕПТНО</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary-outline w-full" onclick="window.Eluma.UI.closeModal('sbpVoucherModal')">Закрыть распоряжение</button>
+    </div>
+  </div>
+
+  <!-- Модалка: Командная строка Ctrl+K -->
+  <div class="modal-backdrop command-palette-backdrop" id="globalCommandPaletteModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="command-palette-dialog">
+      <div class="command-palette-input-wrap">
+        <svg class="palette-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="commandPaletteInput" class="command-palette-input" placeholder="Поиск действий, смен или разделов... (Esc для выхода)" oninput="window.Eluma.UI.onCommandPaletteInput(this.value)" onkeydown="window.Eluma.UI.onCommandPaletteKeydown(event)" autocomplete="off">
+        <kbd class="palette-esc-badge" onclick="window.Eluma.UI.closeCommandPalette()">ESC</kbd>
+      </div>
+      <div class="command-palette-results" id="commandPaletteResults"></div>
+    </div>
+  </div>
+
+  <!-- Уведомления (Toast) -->
+  <div class="feedback-toast" id="feedbackToast">
+    <div class="toast-icon" id="toastIcon"></div>
+    <div class="toast-body">
+      <strong class="toast-title" id="toastTitle">Уведомление</strong>
+      <p class="toast-msg" id="toastMsg">Сообщение системы</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    if (typeof L !== 'undefined' && L.Control && L.Control.Attribution) {
+      L.Control.Attribution.prototype.options.prefix = false;
+    }
+  </script>
+  <script src="core/ui.js"></script>
+  <script src="core/courses.js"></script>
+  <script src="core/seed.js"></script>
+  <script src="core/store.js"></script>
+  <script src="worker/app.js"></script>
+  <script src="dev/toolkit.js"></script>
+</body>
+</html>
