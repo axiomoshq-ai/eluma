@@ -13,19 +13,15 @@
 <body class="app-body">
   <div class="app-root" id="appRoot">
 
-    <!-- ДЕСКТОПНЫЙ САЙДБАР ЗАКАЗЧИКА -->
+    <!-- 1. ЛЕВЫЙ САЙДБАР ЗАКАЗЧИКА (ФИКСИРОВАННЫЙ 250px) -->
     <aside class="desktop-sidebar" id="desktopSidebar">
       <div class="d-sidebar-header">
         <a href="employer.html" class="d-brand-box">
           <div class="d-logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Верхняя балка -->
               <rect x="4" y="5" width="10" height="2.8" rx="1.4" fill="currentColor"/>
-              <!-- Сигнальная точка фокуса -->
               <circle cx="18" cy="6.4" r="1.8" fill="#D94E28"/>
-              <!-- Средняя балка сдвига -->
               <rect x="4" y="10.6" width="12" height="2.8" rx="1.4" fill="currentColor"/>
-              <!-- Нижняя базовая балка -->
               <rect x="4" y="16.2" width="16" height="2.8" rx="1.4" fill="currentColor"/>
             </svg>
           </div>
@@ -36,41 +32,53 @@
         </a>
       </div>
 
-      <!-- Виджет баланса и эскроу заказчика -->
-      <div class="d-balance-widget employer-balance-widget" id="dSidebarEscrow" onclick="window.Eluma.Employer.navigate('balance')">
+      <!-- Переключатель роли на Исполнителя -->
+      <div class="sidebar-role-switch-wrap">
+        <a href="worker.html" class="sidebar-role-btn" title="Перейти в кабинет исполнителя">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Режим исполнителя</span>
+          <svg class="role-arrow-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+
+      <!-- Компактный виджет B2B-подписки и эскроу-статуса -->
+      <div class="d-balance-widget employer-b2b-widget" id="dSidebarEscrow" onclick="window.Eluma.Employer.navigate('balance')">
         <div class="d-balance-header">
-          <span class="d-balance-label">Зарезервировано в эскроу</span>
+          <span class="d-balance-label">B2B-Тариф</span>
+          <span class="d-tariff-badge active" id="sidebarTariffBadge">0% сбор</span>
         </div>
         <div class="d-balance-value-row">
-          <strong class="d-balance-amount" id="sidebarEscrowReserved">0 ₽</strong>
+          <strong class="d-tariff-plan-title" id="sidebarTariffTitle">B2B-Подписка</strong>
         </div>
         <div class="d-balance-sub-row">
-          <span class="d-balance-sub-label">Свободный остаток:</span>
-          <span class="d-balance-sub-val" id="sidebarEscrowAvailable">0 ₽</span>
+          <span class="d-balance-sub-label">В холде Eluma Safe:</span>
+          <strong class="d-balance-sub-val" id="sidebarEscrowReserved">18 511 ₽</strong>
+          <span id="sidebarEscrowAvailable" style="display:none">0 ₽</span>
         </div>
         <div class="d-balance-action-link">
-          <span>Управление эскроу-счётом</span>
+          <span>Управление тарифом и чеки</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
 
-      <!-- Навигация заказчика -->
+      <!-- Навигационное меню заказчика (Сквозная навигация, без дублей) -->
       <nav class="d-sidebar-nav" id="dNavEmployer">
         <button type="button" class="d-nav-item active" data-screen="home" onclick="window.Eluma.Employer.navigate('home')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>Мои заказы</span>
-        </button>
-        <button type="button" class="d-nav-item" data-screen="create" onclick="window.Eluma.Employer.navigate('create')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          <span>Создать смену</span>
+          <span>Мои смены</span>
         </button>
         <button type="button" class="d-nav-item" data-screen="chats" onclick="window.Eluma.Employer.navigate('chats')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span>Отклики и чаты</span>
+          <span>Отклики и допуск</span>
+          <span class="d-nav-count-badge" id="dNavChatsBadge" style="display:none">0</span>
         </button>
         <button type="button" class="d-nav-item" data-screen="balance" onclick="window.Eluma.Employer.navigate('balance')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          <span>Баланс и эскроу</span>
+          <span>Финансы и чеки ФНС</span>
+        </button>
+        <button type="button" class="d-nav-item" data-screen="memos" onclick="window.Eluma.Employer.navigate('memos')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Мои объекты / Памятки</span>
         </button>
         <button type="button" class="d-nav-item" data-screen="profile" onclick="window.Eluma.Employer.navigate('profile')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="9" y1="18" x2="9" y2="18.01"/></svg>
@@ -78,6 +86,7 @@
         </button>
       </nav>
 
+      <!-- Под аккаунта внизу сайдбара -->
       <div class="d-sidebar-footer">
         <div class="account-switcher-pod" id="empAccountSwitcherPod" onclick="window.Eluma.UI.openAccountSwitcherModal()" title="Переключить демо-профиль">
           <div class="pod-avatar" id="sidebarEmployerAvatar">СЛ</div>
@@ -100,19 +109,20 @@
       </div>
     </aside>
 
-    <!-- ОСНОВНАЯ КОЛОНКА КАБИНЕТА ЗАКАЗЧИКА -->
+    <!-- 2. ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ (1fr, центрированная до 1100px) -->
     <div class="app-content-wrapper">
-      <!-- Шапка кабинета -->
+      <!-- Шапка кабинета (Единственная кнопка создания смены) -->
       <header class="app-header">
         <div class="header-inner">
           <div class="header-title-box">
-            <h1 class="header-screen-title" id="headerScreenTitle">Мои заказы</h1>
+            <h1 class="header-screen-title" id="headerScreenTitle">Мои смены</h1>
             <span class="header-location-sub header-geo-badge">
               <span>Самара · Эскроу-защита</span>
             </span>
           </div>
 
           <div class="header-actions">
+            <!-- Единственная кнопка создания смены на экране -->
             <button type="button" class="btn-header-cta header-quick-create-btn" onclick="window.Eluma.Employer.navigate('create')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span>Создать смену</span>
@@ -126,471 +136,500 @@
         </div>
       </header>
 
-        <!-- ЭКРАНЫ КАБИНЕТА ЗАКАЗЧИКА -->
-        <main class="app-body-content">
+      <!-- ЭКРАНЫ КАБИНЕТА ЗАКАЗЧИКА -->
+      <main class="app-body-content">
 
-          <!-- 1. ЭКРАН: МОИ ЗАКАЗЫ (HOME) -->
-          <section class="screen active" id="scr-emp-home">
-            <div class="emp-workspace-grid">
-              <div class="emp-feed-col">
-                <div class="emp-search-bar" style="margin-bottom: 12px;">
-                  <div class="feed-search-box">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="employerSearchInput" placeholder="Поиск по моим заказам, адресу или категории..." oninput="window.Eluma.Employer.setSearchQuery(this.value)">
-                  </div>
-                </div>
-                <div class="emp-top-filters-row">
-                  <div class="emp-filter-tabs">
-                    <button type="button" class="emp-tab-chip active" data-status="all" onclick="window.Eluma.Employer.setStatusFilter('all')">Все заказы (<span id="empOrdersCount">0</span>)</button>
-                    <button type="button" class="emp-tab-chip" data-status="searching" onclick="window.Eluma.Employer.setStatusFilter('searching')">Ищем исполнителя (<span id="empSearchingCount">0</span>)</button>
-                    <button type="button" class="emp-tab-chip" data-status="in_review" onclick="window.Eluma.Employer.setStatusFilter('in_review')">На проверке (<span id="empInReviewCount">0</span>)</button>
-                    <button type="button" class="emp-tab-chip" data-status="completed" onclick="window.Eluma.Employer.setStatusFilter('completed')">Завершены (<span id="empCompletedCount">0</span>)</button>
-                  </div>
-                </div>
+        <!-- 1. ЭКРАН: МОИ СМЕНЫ (HOME) -->
+        <section class="screen active" id="scr-emp-home">
+          <div class="emp-home-container">
 
-                <!-- Список заказов работодателя (только по ownerId) -->
-                <div class="employer-tasks-list" id="employerTasksList"></div>
+            <!-- Горизонтальная полоса KPI (3 мини-карточки в 1 ряд) -->
+            <div class="emp-kpi-bar" id="empKpiBar">
+              <!-- KPI 1: В безопасном холде Eluma Safe -->
+              <div class="emp-kpi-card" id="kpiHoldCard">
+                <div class="kpi-icon-wrap hold">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label">В безопасном холде (Eluma Safe)</span>
+                  <strong class="kpi-val" id="kpiHoldAmount">18 511 ₽</strong>
+                  <span class="kpi-sub" id="kpiHoldShifts">6 активных смен</span>
+                </div>
               </div>
 
-              <!-- Правая колонка сводки эскроу и быстрой аналитики смен -->
-              <aside class="emp-summary-aside">
-                <!-- Карточка 1: Сводка эскроу-счёта -->
-                <div class="emp-aside-card">
-                  <div class="emp-aside-card-header">
-                    <span class="emp-aside-title">Сводка эскроу-счёта</span>
-                    <span class="emp-aside-badge safe">Безопасная сделка</span>
-                  </div>
-                  <div class="emp-aside-balance-grid">
-                    <div class="emp-aside-stat">
-                      <span class="emp-aside-stat-label">Свободный остаток</span>
-                      <strong class="emp-aside-stat-val" id="asideEscrowAvailable">45 000 ₽</strong>
-                    </div>
-                    <div class="emp-aside-stat">
-                      <span class="emp-aside-stat-label">В резерве смен</span>
-                      <strong class="emp-aside-stat-val" id="asideEscrowReserved">18 511 ₽</strong>
-                    </div>
-                  </div>
-                  <div class="emp-aside-meta-row">
-                    <span>Комиссия площадки: <strong>7%</strong> (включена)</span>
-                  </div>
-                  <div class="escrow-quick-presets-row">
-                    <button type="button" class="btn-preset-sm" onclick="window.Eluma.Employer.topUpEscrow(5000)">+5 000 ₽</button>
-                    <button type="button" class="btn-preset-sm" onclick="window.Eluma.Employer.topUpEscrow(10000)">+10 000 ₽</button>
-                    <button type="button" class="btn-preset-sm" onclick="window.Eluma.Employer.topUpEscrow(25000)">+25 000 ₽</button>
-                  </div>
-                  <button type="button" class="btn btn-secondary-outline btn-sm w-full" onclick="window.Eluma.Employer.topUpEscrow(10000)">Пополнить депозит</button>
-                  <button type="button" class="btn btn-secondary-outline btn-sm w-full" style="margin-top:8px;" onclick="window.Eluma.Employer.exportEscrowCsv()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>Выгрузить реестр смен (CSV)</span>
+              <!-- KPI 2: Требуют внимания -->
+              <div class="emp-kpi-card" id="kpiAttentionCard" onclick="window.Eluma.Employer.filterNeedsAttention()">
+                <div class="kpi-icon-wrap attention">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label">Требуют внимания</span>
+                  <strong class="kpi-val" id="kpiAttentionCount">0 смен</strong>
+                  <span class="kpi-sub" id="kpiAttentionDesc">Все смены под контролем</span>
+                </div>
+              </div>
+
+              <!-- KPI 3: Тариф и документы -->
+              <div class="emp-kpi-card" id="kpiTariffCard">
+                <div class="kpi-icon-wrap tariff">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label">Тариф и документы</span>
+                  <strong class="kpi-val" id="kpiTariffStatus">B2B: 790 ₽/мес — 0% сбор</strong>
+                  <button type="button" class="kpi-csv-link-btn" onclick="window.Eluma.Employer.exportEscrowCsv()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Скачать реестр чеков ФНС (CSV)</span>
                   </button>
                 </div>
-
-                <!-- Карточка 2: Статус смен сегодня -->
-                <div class="emp-aside-card">
-                  <div class="emp-aside-card-header">
-                    <span class="emp-aside-title">Статус смен сегодня</span>
-                  </div>
-                  <div class="emp-aside-metrics">
-                    <div class="emp-metric-line">
-                      <span class="emp-metric-label">Активных публикаций:</span>
-                      <strong class="emp-metric-num" id="asideActiveCount">0</strong>
-                    </div>
-                    <div class="emp-metric-line">
-                      <span class="emp-metric-label">На проверке фото ДО/ПОСЛЕ:</span>
-                      <strong class="emp-metric-num" id="asideReviewCount">0</strong>
-                    </div>
-                    <div class="emp-metric-line">
-                      <span class="emp-metric-label">Завершено за месяц:</span>
-                      <strong class="emp-metric-num" id="asideCompletedMonth">12</strong>
-                    </div>
-                  </div>
-                  <button type="button" class="btn btn-primary-cta btn-sm w-full" onclick="window.Eluma.Employer.navigate('create')" style="margin-top: 10px;">
-                    + Создать новую смену
-                  </button>
-                </div>
-
-                <!-- Блок 3: Очередь действий (Action Queue) -->
-                <div class="emp-aside-card action-queue-card" id="employerActionQueueCard">
-                  <div class="emp-aside-card-header">
-                    <div class="action-queue-title-wrap">
-                      <span class="emp-aside-title">Очередь действий</span>
-                      <span class="action-queue-badge" id="actionQueueBadgeCount">0</span>
-                    </div>
-                    <button type="button" class="action-queue-sim-btn" onclick="window.Eluma.Employer.simulateWorkerEvent()" title="Эмуляция отклика или сдачи смены">+ Событие</button>
-                  </div>
-                  <div class="action-queue-items-list" id="employerActionQueue">
-                    <div class="action-queue-empty">Очередь чиста, действий не требуется</div>
-                  </div>
-                </div>
-              </aside>
+              </div>
             </div>
-          </section>
 
-          <!-- 2. ЭКРАН: СОЗДАНИЕ СМЕНЫ (CREATE) -->
-          <section class="screen" id="scr-emp-create">
-            <div class="emp-create-wrap">
-              <div class="emp-create-card">
-                <div class="create-card-header">
-                  <h2 class="card-lead-title">Публикация задания или смены</h2>
-                  <p class="card-lead-desc">Сумма вознаграждения резервируется на эскроу-счёте Eluma Safe до успешной приёмки фотоотчёта</p>
+            <!-- Верхняя панель: Поиск и фильтры по статусам -->
+            <div class="emp-feed-toolbar">
+              <div class="emp-search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="employerSearchInput" placeholder="Поиск по моим сменам, адресу или категории..." oninput="window.Eluma.Employer.setSearchQuery(this.value)">
+              </div>
+
+              <div class="emp-tabs-scroll-wrap">
+                <div class="emp-tabs-bar">
+                  <button type="button" class="emp-tab-chip active" data-status="all" onclick="window.Eluma.Employer.setStatusFilter('all')">Все (<span id="empOrdersCount">0</span>)</button>
+                  <button type="button" class="emp-tab-chip" data-status="searching" onclick="window.Eluma.Employer.setStatusFilter('searching')">Ищем исполнителя (<span id="empSearchingCount">0</span>)</button>
+                  <button type="button" class="emp-tab-chip" data-status="assigned" onclick="window.Eluma.Employer.setStatusFilter('assigned')">В работе (<span id="empAssignedCount">0</span>)</button>
+                  <button type="button" class="emp-tab-chip" data-status="in_review" onclick="window.Eluma.Employer.setStatusFilter('in_review')">Проверка фото (<span id="empInReviewCount">0</span>)</button>
+                  <button type="button" class="emp-tab-chip" data-status="completed" onclick="window.Eluma.Employer.setStatusFilter('completed')">Завершены (<span id="empCompletedCount">0</span>)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Список карточек смен заказчика -->
+            <div class="employer-tasks-list" id="employerTasksList"></div>
+
+            <!-- Симулятор фоновых событий для тестирования (Action Queue) -->
+            <div id="employerActionQueueCard" style="margin-top: 28px; padding: 14px 18px; border-radius: 14px; background: var(--bg-card-subtle); border: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px;">
+              <div class="emp-aside-card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="action-queue-title-wrap" style="display: flex; align-items: center; gap: 8px;">
+                  <span class="emp-aside-title" style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Очередь действий</span>
+                  <span class="action-queue-badge" id="actionQueueBadgeCount" style="font-size: 11px; font-weight: 700; background: var(--accent-terracotta); color: #fff; padding: 1px 6px; border-radius: 10px;">0</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn-emp-action duplicate btn btn-xs btn-secondary-outline" onclick="window.Eluma.Employer.duplicateOrder(1)" title="Дублировать смену">Дублировать смену</button>
+                  <button type="button" class="action-queue-sim-btn btn btn-xs btn-secondary-outline" onclick="window.Eluma.Employer.simulateWorkerEvent()" title="Эмуляция отклика или сдачи смены">+ Событие</button>
+                </div>
+              </div>
+              <div class="action-queue-items-list" id="employerActionQueue">
+                <div class="action-queue-empty" style="font-size: 12px; color: var(--text-muted);">Очередь чиста, действий не требуется</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ЭКРАН: СОЗДАНИЕ СМЕНЫ (CREATE) -->
+        <section class="screen" id="scr-emp-create">
+          <div class="emp-create-wrap">
+            <div class="emp-create-card">
+              <div class="create-card-header">
+                <h2 class="card-lead-title">Публикация задания или смены</h2>
+                <p class="card-lead-desc">Сумма вознаграждения резервируется на эскроу-счёте Eluma Safe до успешной приёмки фотоотчёта</p>
+              </div>
+
+              <form id="employerCreateForm" onsubmit="window.Eluma.Employer.handleCreateOrderSubmit(event)">
+                <!-- Тип заказа: Бизнес / Частный -->
+                <div class="form-group">
+                  <label class="form-label">Тип заказчика:</label>
+                  <div class="order-type-radios-grid">
+                    <label class="radio-box">
+                      <input type="radio" name="orderType" value="business" checked>
+                      <span class="radio-title">Бизнес / Юр. лицо</span>
+                      <span class="radio-hint">Фиксированная ставка, закрывающие документы</span>
+                    </label>
+                    <label class="radio-box">
+                      <input type="radio" name="orderType" value="private">
+                      <span class="radio-title">Частное лицо (P2P)</span>
+                      <span class="radio-hint">Возможен торг и встречные предложения</span>
+                    </label>
+                  </div>
                 </div>
 
-                <form id="employerCreateForm" onsubmit="window.Eluma.Employer.handleCreateOrderSubmit(event)">
-                  <!-- Тип заказа: Бизнес / Частный -->
-                  <div class="form-group">
-                    <label class="form-label">Тип заказчика:</label>
-                    <div class="order-type-radios-grid">
-                      <label class="radio-box">
-                        <input type="radio" name="orderType" value="business" checked>
-                        <span class="radio-title">Бизнес / Юр. лицо</span>
-                        <span class="radio-hint">Фиксированная ставка, закрывающие документы</span>
-                      </label>
-                      <label class="radio-box">
-                        <input type="radio" name="orderType" value="private">
-                        <span class="radio-title">Частное лицо (P2P)</span>
-                        <span class="radio-hint">Возможен торг и встречные предложения</span>
-                      </label>
-                    </div>
-                  </div>
+                <!-- Название -->
+                <div class="form-group">
+                  <label class="form-label" for="taskTitleInput">Название смены или задания:</label>
+                  <input type="text" id="taskTitleInput" class="form-input" placeholder="Например: Сортировка интернет-заказов на складе" required>
+                </div>
 
-                  <!-- Название -->
-                  <div class="form-group">
-                    <label class="form-label" for="taskTitleInput">Название смены или задания:</label>
-                    <input type="text" id="taskTitleInput" class="form-input" placeholder="Например: Сортировка интернет-заказов на складе" required>
-                  </div>
+                <!-- Категория (6 обязательных категорий) -->
+                <div class="form-group">
+                  <label class="form-label" for="taskCategorySelect">Направление (категория допуска):</label>
+                  <select id="taskCategorySelect" class="form-select">
+                    <option value="Физическая помощь">Физическая помощь (погрузка, переезд)</option>
+                    <option value="Склад/Ритейл">Склад / Ритейл (комплектовка, выкладка)</option>
+                    <option value="ПВЗ">Пункт выдачи заказов (ПВЗ Ozon, WB, Яндекс)</option>
+                    <option value="Курьер">Курьерская доставка (пеший / авто)</option>
+                    <option value="Мелкий ремонт">Мелкий бытовой ремонт (сантехника, электрика)</option>
+                    <option value="Помощь на участке">Помощь на участке (дача, благоустройство)</option>
+                  </select>
+                </div>
 
-                  <!-- Категория (6 обязательных категорий) -->
+                <!-- Район Самары и точный адрес -->
+                <div class="form-grid-2col">
                   <div class="form-group">
-                    <label class="form-label" for="taskCategorySelect">Направление (категория допуска):</label>
-                    <select id="taskCategorySelect" class="form-select">
-                      <option value="Физическая помощь">Физическая помощь (погрузка, переезд)</option>
-                      <option value="Склад/Ритейл">Склад / Ритейл (комплектовка, выкладка)</option>
-                      <option value="ПВЗ">Пункт выдачи заказов (ПВЗ Ozon, WB, Яндекс)</option>
-                      <option value="Курьер">Курьерская доставка (пеший / авто)</option>
-                      <option value="Мелкий ремонт">Мелкий бытовой ремонт (сантехника, электрика)</option>
-                      <option value="Помощь на участке">Помощь на участке (дача, благоустройство)</option>
+                    <label class="form-label" for="taskDistrictSelect">Район Самары:</label>
+                    <select id="taskDistrictSelect" class="form-select">
+                      <option value="Октябрьский р-н">Октябрьский район</option>
+                      <option value="Ленинский р-н">Ленинский район</option>
+                      <option value="Самарский р-н">Самарский район</option>
+                      <option value="Кировский р-н">Кировский район</option>
+                      <option value="Промышленный р-н">Промышленный район</option>
+                      <option value="Советский р-н">Советский район</option>
+                      <option value="Железнодорожный р-н">Железнодорожный район</option>
+                      <option value="Красноглинский р-н">Красноглинский район</option>
+                      <option value="Куйбышевский р-н">Куйбышевский район</option>
                     </select>
                   </div>
 
-                  <!-- Район Самары и точный адрес -->
-                  <div class="form-grid-2col">
-                    <div class="form-group">
-                      <label class="form-label" for="taskDistrictSelect">Район Самары:</label>
-                      <select id="taskDistrictSelect" class="form-select">
-                        <option value="Октябрьский р-н">Октябрьский район</option>
-                        <option value="Ленинский р-н">Ленинский район</option>
-                        <option value="Самарский р-н">Самарский район</option>
-                        <option value="Кировский р-н">Кировский район</option>
-                        <option value="Промышленный р-н">Промышленный район</option>
-                        <option value="Советский р-н">Советский район</option>
-                        <option value="Железнодорожный р-н">Железнодорожный район</option>
-                        <option value="Красноглинский р-н">Красноглинский район</option>
-                        <option value="Куйбышевский р-н">Куйбышевский район</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label" for="taskAddressInput">Улица, дом, ориентир:</label>
-                      <input type="text" id="taskAddressInput" class="form-input" placeholder="ул. Ново-Садовая, 140" required>
-                    </div>
-                  </div>
-
-                  <!-- Дата и время -->
-                  <div class="form-grid-3col">
-                    <div class="form-group">
-                      <label class="form-label" for="taskDaySelect">День смены:</label>
-                      <select id="taskDaySelect" class="form-select">
-                        <option value="today">Сегодня</option>
-                        <option value="tomorrow">Завтра</option>
-                        <option value="afterTomorrow">Послезавтра</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label" for="taskStartTimeSelect">Время начала:</label>
-                      <select id="taskStartTimeSelect" class="form-select">
-                        <option value="8">08:00</option>
-                        <option value="9">09:00</option>
-                        <option value="10">10:00</option>
-                        <option value="12">12:00</option>
-                        <option value="14">14:00</option>
-                        <option value="16" selected>16:00</option>
-                        <option value="18">18:00</option>
-                        <option value="20">20:00</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label" for="taskHoursSelect">Длительность:</label>
-                      <select id="taskHoursSelect" class="form-select">
-                        <option value="2">2 часа</option>
-                        <option value="3" selected>3 часа</option>
-                        <option value="4">4 часа</option>
-                        <option value="6">6 часов</option>
-                        <option value="8">8 часов</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- Количество исполнителей / слотов смены (Co-Op & Multi-Slot) -->
                   <div class="form-group">
-                    <label class="form-label" for="taskSlotsSelect">Количество исполнителей (слоты смены):</label>
-                    <select id="taskSlotsSelect" class="form-select">
-                      <option value="1" selected>1 исполнитель (индивидуально)</option>
-                      <option value="2">2 исполнителя (в паре / с напарником)</option>
-                      <option value="3">3 исполнителя (бригада 3 чел.)</option>
-                      <option value="4">4 исполнителя (бригада 4 чел.)</option>
-                      <option value="6">6 исполнителей (большая бригада 6 чел.)</option>
+                    <label class="form-label" for="taskAddressInput">Улица, дом, ориентир:</label>
+                    <input type="text" id="taskAddressInput" class="form-input" placeholder="ул. Ново-Садовая, 140" required>
+                  </div>
+                </div>
+
+                <!-- Дата и время -->
+                <div class="form-grid-3col">
+                  <div class="form-group">
+                    <label class="form-label" for="taskDaySelect">День смены:</label>
+                    <select id="taskDaySelect" class="form-select">
+                      <option value="today">Сегодня</option>
+                      <option value="tomorrow">Завтра</option>
+                      <option value="afterTomorrow">Послезавтра</option>
                     </select>
                   </div>
 
-                  <!-- Бюджет и оплата -->
                   <div class="form-group">
-                    <label class="form-label" for="taskPriceInput">Вознаграждение исполнителю (₽):</label>
-                    <div class="price-input-row">
-                      <input type="number" id="taskPriceInput" class="form-input price-large-input" value="2500" min="500" step="100" oninput="window.Eluma.Employer.updateCreateEscrowCalc()" required>
-                      <span class="currency-label">₽</span>
-                    </div>
-                    <div class="quick-price-chips">
-                      <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=1800; window.Eluma.Employer.updateCreateEscrowCalc();">1 800 ₽</button>
-                      <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=2500; window.Eluma.Employer.updateCreateEscrowCalc();">2 500 ₽</button>
-                      <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=3200; window.Eluma.Employer.updateCreateEscrowCalc();">3 200 ₽</button>
-                      <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=4500; window.Eluma.Employer.updateCreateEscrowCalc();">4 500 ₽</button>
-                    </div>
-
-                    <!-- Динамический калькулятор эскроу (7% платформенный сбор) -->
-                    <div class="escrow-calc-breakdown" id="createOrderEscrowCalc">
-                      <div class="calc-row">
-                        <span class="calc-label">На руки исполнителю (0% комиссии):</span>
-                        <strong class="calc-value" id="calcWorkerPayout">2 500 ₽</strong>
-                      </div>
-                      <div class="calc-row">
-                        <span class="calc-label">Сервисный сбор платформы (7%, включая 1% в Гарантийный пул):</span>
-                        <span class="calc-value fee" id="calcPlatformFee">+175 ₽</span>
-                      </div>
-                      <div class="calc-row emergency-option-row">
-                        <label class="calc-checkbox-label">
-                          <input type="checkbox" id="taskUrgentSosCheckbox" onchange="window.Eluma.Employer.updateCreateEscrowCalc()">
-                          <span>Срочный СОС-вызов (пуш по радиусу 3 км) — +190 ₽</span>
-                        </label>
-                      </div>
-                      <div class="calc-row total-row">
-                        <span class="calc-label">Итого к резервированию на Номинальном счёте:</span>
-                        <strong class="calc-value total" id="calcTotalEscrow">2 675 ₽</strong>
-                      </div>
-                    </div>
+                    <label class="form-label" for="taskStartTimeSelect">Время начала:</label>
+                    <select id="taskStartTimeSelect" class="form-select">
+                      <option value="8">08:00</option>
+                      <option value="9">09:00</option>
+                      <option value="10">10:00</option>
+                      <option value="12">12:00</option>
+                      <option value="14">14:00</option>
+                      <option value="16" selected>16:00</option>
+                      <option value="18">18:00</option>
+                      <option value="20">20:00</option>
+                    </select>
                   </div>
 
-                  <!-- Описание требований -->
                   <div class="form-group">
-                    <label class="form-label" for="taskDescInput">Требования к исполнителю и особенности:</label>
-                    <textarea id="taskDescInput" class="form-textarea" rows="3" placeholder="Что потребуется делать, есть ли спецформа или инструменты..."></textarea>
-                  </div>
-
-                  <div class="form-actions-bar">
-                    <button type="submit" class="btn btn-primary-cta submit-order-btn">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                      <span>Опубликовать и зарезервировать в эскроу</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </section>
-
-          <!-- 3. ЭКРАН: ДЕТАЛИ ЗАКАЗА (DETAIL & ПУБЛИЧНАЯ КАРТОЧКА ИСПОЛНИТЕЛЯ) -->
-          <section class="screen" id="scr-emp-detail">
-            <div class="emp-detail-wrap">
-              <div class="detail-top-nav-line">
-                <button type="button" class="btn-back-link" onclick="window.Eluma.Employer.navigate('home')">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                  <span>Назад к списку заказов</span>
-                </button>
-                <div id="empDetailStatusBadge"></div>
-              </div>
-
-              <div class="detail-photo-card" id="empDetailPhotoWrap">
-                <img id="empDetailPhotoImg" class="detail-photo-img" src="" alt="Фото объекта">
-              </div>
-
-              <!-- Шапка деталей заказа -->
-              <div class="detail-header-card">
-                <h2 class="detail-order-title" id="empDetailTitle">Заказ</h2>
-                <div class="detail-price-row">
-                  <strong class="detail-order-price" id="empDetailPrice">0 ₽</strong>
-                  <span class="detail-price-note">Зарезервировано в эскроу Eluma Safe</span>
-                </div>
-                <div class="detail-meta-list">
-                  <div class="detail-meta-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span id="empDetailTime">-</span>
-                  </div>
-                  <div class="detail-meta-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <span id="empDetailDistrict">-</span>
+                    <label class="form-label" for="taskHoursSelect">Длительность:</label>
+                    <select id="taskHoursSelect" class="form-select">
+                      <option value="2">2 часа</option>
+                      <option value="3" selected>3 часа</option>
+                      <option value="4">4 часа</option>
+                      <option value="6">6 часов</option>
+                      <option value="8">8 часов</option>
+                    </select>
                   </div>
                 </div>
-                <p class="detail-desc-paragraph" id="empDetailDesc">-</p>
-              </div>
 
-              <!-- ПУБЛИЧНАЯ КАРТОЧКА НАЗНАЧЕННОГО ИСПОЛНИТЕЛЯ (Раздел 6 мастер-промпта) -->
-              <div class="emp-worker-card-section">
-                <h3 class="section-lead-title">Назначенный исполнитель</h3>
-                <div id="empAssignedWorkerCardContainer"></div>
-              </div>
-
-              <!-- ФОТОФИКСАЦИЯ ДО/ПОСЛЕ И GPS-МЕТКА ПРИБЫТИЯ -->
-              <div class="emp-proofs-card">
-                <div class="proofs-head-row">
-                  <h3 class="section-lead-title">Контроль выполнения (ДО/ПОСЛЕ)</h3>
-                  <span class="proofs-badge" id="empGpsStampBadge">GPS: Ожидает фиксации</span>
+                <!-- Количество исполнителей / слотов смены (Co-Op & Multi-Slot) -->
+                <div class="form-group">
+                  <label class="form-label" for="taskSlotsSelect">Количество исполнителей (слоты смены):</label>
+                  <select id="taskSlotsSelect" class="form-select">
+                    <option value="1" selected>1 исполнитель (индивидуально)</option>
+                    <option value="2">2 исполнителя (в паре / с напарником)</option>
+                    <option value="3">3 исполнителя (бригада 3 чел.)</option>
+                    <option value="4">4 исполнителя (бригада 4 чел.)</option>
+                    <option value="6">6 исполнителей (большая бригада 6 чел.)</option>
+                  </select>
                 </div>
 
-                <div class="photo-slots-grid">
-                  <div class="photo-slot">
-                    <span class="slot-title">1. Снимок ДО начала смены</span>
-                    <div class="slot-preview-box" id="empSlotBefore">
-                      <div class="slot-placeholder">Снимок ДО ожидает загрузки</div>
+                <!-- Памятка объекта (откроется исполнителю после GPS чек-ина 150м) -->
+                <div class="form-group">
+                  <label class="form-label" for="taskMemoInput">Памятка объекта (откроется исполнителю после GPS чек-ина на точке):</label>
+                  <textarea id="taskMemoInput" class="form-textarea" rows="2" placeholder="Например: Спецодежда и рохли выдаются на проходной базы по паспорту. Код двери: #4210"></textarea>
+                </div>
+
+                <!-- Бюджет и оплата -->
+                <div class="form-group">
+                  <label class="form-label" for="taskPriceInput">Вознаграждение исполнителю (₽):</label>
+                  <div class="price-input-row">
+                    <input type="number" id="taskPriceInput" class="form-input price-large-input" value="2500" min="500" step="100" oninput="window.Eluma.Employer.updateCreateEscrowCalc()" required>
+                    <span class="currency-label">₽</span>
+                  </div>
+                  <div class="quick-price-chips">
+                    <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=1800; window.Eluma.Employer.updateCreateEscrowCalc();">1 800 ₽</button>
+                    <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=2500; window.Eluma.Employer.updateCreateEscrowCalc();">2 500 ₽</button>
+                    <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=3200; window.Eluma.Employer.updateCreateEscrowCalc();">3 200 ₽</button>
+                    <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=4500; window.Eluma.Employer.updateCreateEscrowCalc();">4 500 ₽</button>
+                  </div>
+
+                  <!-- Динамический расчёт холдирования эскроу (7% платформенный сбор) -->
+                  <div class="escrow-calc-breakdown" id="createOrderEscrowCalc">
+                    <div class="calc-row">
+                      <span class="calc-label">На руки исполнителю (0% комиссии):</span>
+                      <strong class="calc-value" id="calcWorkerPayout">2 500 ₽</strong>
                     </div>
-                  </div>
-
-                  <div class="photo-slot">
-                    <span class="slot-title">2. Снимок ПОСЛЕ окончания смены</span>
-                    <div class="slot-preview-box" id="empSlotAfter">
-                      <div class="slot-placeholder">Снимок ПОСЛЕ ожидает загрузки</div>
+                    <div class="calc-row">
+                      <span class="calc-label">Сервисный сбор платформы (7%, включая 1% в Гарантийный пул):</span>
+                      <span class="calc-value fee" id="calcPlatformFee">+175 ₽</span>
+                    </div>
+                    <div class="calc-row emergency-option-row">
+                      <label class="calc-checkbox-label">
+                        <input type="checkbox" id="taskUrgentSosCheckbox" onchange="window.Eluma.Employer.updateCreateEscrowCalc()">
+                        <span>Срочный СОС-вызов (пуш по радиусу 3 км) — +190 ₽</span>
+                      </label>
+                    </div>
+                    <div class="calc-row total-row">
+                      <span class="calc-label">Итого к холдированию в Eluma Safe:</span>
+                      <strong class="calc-value total" id="calcTotalEscrow">2 675 ₽</strong>
                     </div>
                   </div>
                 </div>
 
-                <div class="proofs-review-actions" id="empReviewActionsContainer"></div>
-              </div>
-
-              <!-- Чат по заказу (Eluma Safe) -->
-              <div class="order-chat-box" id="empOrderChatBox">
-                <div class="order-chat-header">
-                  <div class="chat-header-info">
-                    <h4 class="chat-header-title">Чат по заказу (Eluma Safe)</h4>
-                    <span class="chat-header-badge">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                      <span>Защищённый канал • Без передачи прямых контактов</span>
-                    </span>
-                  </div>
+                <!-- Описание требований -->
+                <div class="form-group">
+                  <label class="form-label" for="taskDescInput">Требования к исполнителю и особенности:</label>
+                  <textarea id="taskDescInput" class="form-textarea" rows="3" placeholder="Что потребуется делать, есть ли спецформа или инструменты..."></textarea>
                 </div>
 
-                <div class="order-chat-messages" id="empChatMessages"></div>
-
-                <div class="order-chat-chips">
-                  <span class="chat-chips-label">Быстрые ответы:</span>
-                  <div class="chat-chips-list">
-                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Ждём вас на точке, вход с торца')">Ждём вас на точке, вход с торца</button>
-                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Принял, приступайте к работе')">Принял, приступайте к работе</button>
-                    <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Фото проверил, закрываю смену')">Фото проверил, закрываю смену</button>
-                  </div>
-                </div>
-
-                <form class="order-chat-form" id="empChatForm" onsubmit="window.Eluma.Employer.handleSendChat(event)">
-                  <input type="text" id="empChatInput" class="order-chat-input" placeholder="Написать сообщение по заказу..." autocomplete="off">
-                  <button type="submit" class="order-chat-send-btn" title="Отправить сообщение">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <div class="form-actions-bar">
+                  <button type="submit" class="btn btn-primary-cta submit-order-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Опубликовать и захолдировать в эскроу</span>
                   </button>
-                </form>
-              </div>
-            </div>
-          </section>
-
-          <!-- 4. ЭКРАН: ЧАТЫ И ДИАЛОГИ (CHATS) -->
-          <section class="screen" id="scr-emp-chats">
-            <div class="chats-screen-wrap">
-              <h3 class="section-lead-title">Сообщения и отклики по заказам</h3>
-              <div class="chats-split-grid" id="empChatsSplitGrid">
-                <div class="chats-list-col">
-                  <div class="chats-dialogs-list" id="empChatsList"></div>
                 </div>
-                <div class="chat-active-dialog-col" id="empChatActiveCol">
-                  <div class="chat-empty-selection" id="empChatEmptySelection">
-                    <p style="color: var(--text-muted); text-align: center; padding: 40px 16px;">Выберите диалог из списка слева</p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. ЭКРАН: ДЕТАЛИ ЗАКАЗА (DETAIL & ПУБЛИЧНАЯ КАРТОЧКА ИСПОЛНИТЕЛЯ) -->
+        <section class="screen" id="scr-emp-detail">
+          <div class="emp-detail-wrap">
+            <div class="detail-top-nav-line">
+              <button type="button" class="btn-back-link" onclick="window.Eluma.Employer.navigate('home')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                <span>Назад к списку смен</span>
+              </button>
+              <div id="empDetailStatusBadge"></div>
+            </div>
+
+            <div class="detail-photo-card" id="empDetailPhotoWrap">
+              <img id="empDetailPhotoImg" class="detail-photo-img" src="" alt="Фото объекта">
+            </div>
+
+            <!-- Шапка деталей заказа -->
+            <div class="detail-header-card">
+              <h2 class="detail-order-title" id="empDetailTitle">Смена</h2>
+              <div class="detail-price-row">
+                <strong class="detail-order-price" id="empDetailPrice">0 ₽</strong>
+                <span class="detail-price-note">В холде Eluma Safe</span>
+              </div>
+              <div class="detail-meta-list">
+                <div class="detail-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span id="empDetailTime">-</span>
+                </div>
+                <div class="detail-meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span id="empDetailDistrict">-</span>
+                </div>
+              </div>
+              <p class="detail-desc-paragraph" id="empDetailDesc">-</p>
+            </div>
+
+            <!-- ПУБЛИЧНАЯ КАРТОЧКА НАЗНАЧЕННОГО ИСПОЛНИТЕЛЯ (Раздел 6 мастер-промпта) -->
+            <div class="emp-worker-card-section">
+              <h3 class="section-lead-title">Назначенный исполнитель</h3>
+              <div id="empAssignedWorkerCardContainer"></div>
+            </div>
+
+            <!-- ФОТОФИКСАЦИЯ ДО/ПОСЛЕ И GPS-МЕТКА ПРИБЫТИЯ -->
+            <div class="emp-proofs-card">
+              <div class="proofs-head-row">
+                <h3 class="section-lead-title">Контроль выполнения (ДО/ПОСЛЕ)</h3>
+                <span class="proofs-badge" id="empGpsStampBadge">GPS: Ожидает фиксации</span>
+              </div>
+
+              <div class="photo-slots-grid">
+                <div class="photo-slot">
+                  <span class="slot-title">1. Снимок ДО начала смены</span>
+                  <div class="slot-preview-box" id="empSlotBefore">
+                    <div class="slot-placeholder">Снимок ДО ожидает загрузки</div>
                   </div>
-                  <div class="chat-dialog-panel" id="empChatDialogPanel" style="display:none;"></div>
+                </div>
+
+                <div class="photo-slot">
+                  <span class="slot-title">2. Снимок ПОСЛЕ окончания смены</span>
+                  <div class="slot-preview-box" id="empSlotAfter">
+                    <div class="slot-placeholder">Снимок ПОСЛЕ ожидает загрузки</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
 
-          <!-- 5. ЭКРАН: БАЛАНС И ЭСКРОУ (BALANCE) -->
-          <section class="screen" id="scr-emp-balance">
-            <div class="balance-screen-wrap">
-              <div class="payout-balance-hero">
-                <span class="payout-hero-label">Зарезервировано в сделках (Эскроу)</span>
-                <strong class="payout-hero-amount" id="empBalanceReserved">0 ₽</strong>
-                <div class="balance-available-line">
-                  <span>Свободный остаток на счёте:</span>
-                  <strong id="empBalanceAvailable">0 ₽</strong>
+              <div class="proofs-review-actions" id="empReviewActionsContainer"></div>
+            </div>
+
+            <!-- Чат по заказу (Eluma Safe) -->
+            <div class="order-chat-box" id="empOrderChatBox">
+              <div class="order-chat-header">
+                <div class="chat-header-info">
+                  <h4 class="chat-header-title">Чат по смене (Eluma Safe)</h4>
+                  <span class="chat-header-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Защищённый канал • Без передачи прямых контактов</span>
+                  </span>
                 </div>
-                <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.topUpBalance()">
-                  Пополнить счёт (+10 000 ₽)
+              </div>
+
+              <div class="order-chat-messages" id="empChatMessages"></div>
+
+              <div class="order-chat-chips">
+                <span class="chat-chips-label">Быстрые ответы:</span>
+                <div class="chat-chips-list">
+                  <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Ждём вас на объекте, вход с торца')">Ждём вас на объекте, вход с торца</button>
+                  <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Принял, приступайте к смене')">Принял, приступайте к смене</button>
+                  <button type="button" class="chat-chip-btn" onclick="window.Eluma.Employer.sendQuickChat('Фото проверил, закрываю смену')">Фото проверил, закрываю смену</button>
+                </div>
+              </div>
+
+              <form class="order-chat-form" id="empChatForm" onsubmit="window.Eluma.Employer.handleSendChat(event)">
+                <input type="text" id="empChatInput" class="order-chat-input" placeholder="Написать сообщение по смене..." autocomplete="off">
+                <button type="submit" class="order-chat-send-btn" title="Отправить сообщение">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. ЭКРАН: ОТКЛИКИ И ЧАТЫ (CHATS) — ПОЛНАЯ ВЫСОТА БЕЗ СЕРЫХ ПУСТОТ -->
+        <section class="screen" id="scr-emp-chats">
+          <div class="emp-chats-viewport" id="empChatsViewport">
+            <!-- Левая колонка: Список смен/диалогов -->
+            <div class="chats-sidebar-panel" id="empChatsSidebarPanel">
+              <div class="chats-panel-head">
+                <h2 class="chats-panel-title">Отклики и допуск</h2>
+                <span class="chats-panel-sub">Диалоги по активным сменам</span>
+              </div>
+              <div class="chats-dialogs-scroll" id="empChatsList"></div>
+            </div>
+
+            <!-- Правая колонка: Окно переписки / карточка ожидания с памяткой -->
+            <div class="chats-active-panel" id="empChatActiveCol">
+              <div class="chat-empty-selection" id="empChatEmptySelection" style="display:none;">
+                <p>Выберите смену из списка слева</p>
+              </div>
+              <div class="chat-dialog-panel" id="empChatDialogPanel"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. ЭКРАН: БАЛАНС И ЧЕКИ ФНС (BALANCE) -->
+        <section class="screen" id="scr-emp-balance">
+          <div class="balance-screen-wrap">
+            <div class="payout-balance-hero">
+              <span class="payout-hero-label">В безопасном холде (Eluma Safe)</span>
+              <strong class="payout-hero-amount" id="empBalanceReserved">0 ₽</strong>
+              <div class="balance-available-line">
+                <span>Тарифный план:</span>
+                <strong id="empBalanceAvailable">B2B-Подписка (0% комиссии)</strong>
+              </div>
+              <div class="balance-actions-row">
+                <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.exportEscrowCsv()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Скачать реестр чеков ФНС (CSV)</span>
                 </button>
               </div>
+            </div>
 
-              <div class="escrow-history-section">
-                <h3 class="section-lead-title">Активные зарезервированные смены</h3>
-                <div class="escrow-orders-list" id="empEscrowActiveOrdersList"></div>
+            <div class="escrow-history-section">
+              <h3 class="section-lead-title">Активные захолдированные смены</h3>
+              <div class="escrow-orders-list" id="empEscrowActiveOrdersList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. ЭКРАН: ПРОФИЛЬ КОМПАНИИ (PROFILE & ПАМЯТКИ) -->
+        <section class="screen" id="scr-emp-profile">
+          <div class="profile-screen-wrap">
+            <div class="profile-header-card">
+              <div class="prof-avatar-circle b2b">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="9" y1="18" x2="9" y2="18.01"/></svg>
+              </div>
+              <div class="prof-info-box">
+                <h2 class="prof-name" id="empProfileCompanyName">Компания</h2>
+                <span class="badge-npd-verified" id="empProfileTypeBadge">Юридическое лицо / Бизнес</span>
+                <span class="prof-phone">Самара • Платформенный договор Eluma Safe</span>
               </div>
             </div>
-          </section>
 
-          <!-- 6. ЭКРАН: ПРОФИЛЬ КОМПАНИИ (PROFILE) -->
-          <section class="screen" id="scr-emp-profile">
-            <div class="profile-screen-wrap">
-              <div class="profile-header-card">
-                <div class="prof-avatar-circle b2b">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="9" y1="18" x2="9" y2="18.01"/></svg>
-                </div>
-                <div class="prof-info-box">
-                  <h2 class="prof-name" id="empProfileCompanyName">Компания</h2>
-                  <span class="badge-npd-verified" id="empProfileTypeBadge">Юридическое лицо / Бизнес</span>
-                  <span class="prof-phone">Самара • Платформенный договор Eluma Safe</span>
-                </div>
+            <!-- Раздел памяток и инструктажей -->
+            <div class="company-briefing-card" id="empMemosSection">
+              <div class="onboarding-header">
+                <strong>Памятки объектов и журнал инструктажей по охране труда</strong>
+                <span class="onboarding-progress-text">Стандарт ГОСТ 12.0.004-2015</span>
               </div>
-
-              <div class="company-briefing-card">
-                <div class="onboarding-header">
-                  <strong>Журнал вводных инструктажей по охране труда на объектах</strong>
-                  <span class="onboarding-progress-text">Стандарт ГОСТ 12.0.004-2015</span>
-                </div>
-                <div class="briefing-log-container" id="empSafetyBriefingLogList"></div>
-              </div>
+              <div class="briefing-log-container" id="empSafetyBriefingLogList"></div>
             </div>
-          </section>
+          </div>
+        </section>
 
-        </main>
+      </main>
 
-        <!-- МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ ЗАКАЗЧИКА -->
-        <nav class="mobile-bottom-bar" id="mNavEmployer">
-          <button type="button" class="m-nav-item active" data-screen="home" onclick="window.Eluma.Employer.navigate('home')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            <span>Заказы</span>
-          </button>
-          <button type="button" class="m-nav-item" data-screen="create" onclick="window.Eluma.Employer.navigate('create')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            <span>Создать</span>
-          </button>
-          <button type="button" class="m-nav-item" data-screen="chats" onclick="window.Eluma.Employer.navigate('chats')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span>Чаты</span>
-          </button>
-          <button type="button" class="m-nav-item" data-screen="balance" onclick="window.Eluma.Employer.navigate('balance')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            <span>Эскроу</span>
-          </button>
-          <button type="button" class="m-nav-item" data-screen="profile" onclick="window.Eluma.Employer.navigate('profile')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
-            <span>Профиль</span>
-          </button>
-        </nav>
-      </div>
+      <!-- 3. МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ ЗАКАЗЧИКА (5 ИКОНОК, ВЫСОТА 64px) -->
+      <nav class="mobile-bottom-bar" id="mNavEmployer">
+        <button type="button" class="m-nav-item active" data-screen="home" onclick="window.Eluma.Employer.navigate('home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Смены</span>
+        </button>
+        <button type="button" class="m-nav-item" data-screen="chats" onclick="window.Eluma.Employer.navigate('chats')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Отклики</span>
+          <span class="m-nav-badge" id="mNavChatsBadge" style="display:none">0</span>
+        </button>
+        <button type="button" class="m-nav-item center-create" data-screen="create" onclick="window.Eluma.Employer.navigate('create')" title="Создать смену">
+          <div class="m-create-fab">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span>Создать</span>
+        </button>
+        <button type="button" class="m-nav-item" data-screen="balance" onclick="window.Eluma.Employer.navigate('balance')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span>Чеки/Тариф</span>
+        </button>
+        <button type="button" class="m-nav-item" data-screen="profile" onclick="window.Eluma.Employer.navigate('profile')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+          <span>Профиль</span>
+        </button>
+      </nav>
+
     </div>
+  </div>
 
   <!-- МОДАЛЬНЫЕ ОКНА КАБИНЕТА ЗАКАЗЧИКА -->
+
+  <!-- Модалка: Редактирование памятки объекта -->
+  <div class="modal-backdrop" id="editMemoModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Памятка объекта для исполнителей</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('editMemoModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form onsubmit="window.Eluma.Employer.saveObjectMemo(event)">
+        <p class="modal-sub-label">Текст откроется исполнителю только после подтверждения прибытия (GPS чек-ин в радиусе 150 м):</p>
+        <div class="form-group">
+          <textarea id="editMemoTextInput" class="form-textarea" rows="4" placeholder="Спецодежда и рохли выдаются на проходной базы по паспорту. Код двери: #4210" required></textarea>
+        </div>
+        <div class="modal-actions-grid">
+          <button type="submit" class="btn btn-primary-cta">Сохранить памятку</button>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('editMemoModal')">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Модалка: Возврат на доработку -->
   <div class="modal-backdrop" id="reworkReasonModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
@@ -663,11 +702,11 @@
     </div>
   </div>
 
-  <!-- Модалка: Быстрое редактирование цены и названия заказа -->
+  <!-- Модалка: Быстрое редактирование цены и названия смены -->
   <div class="modal-backdrop" id="editTaskModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
     <div class="modal-sheet-dialog">
       <div class="modal-header-line">
-        <h3 class="modal-main-title">Редактирование заказа</h3>
+        <h3 class="modal-main-title">Редактирование смены</h3>
         <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('editTaskModal')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
