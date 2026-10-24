@@ -156,7 +156,7 @@
               </div>
 
               <!-- KPI 3: Тариф и документы -->
-              <div class="emp-kpi-card" id="kpiTariffCard" onclick="window.Eluma.Employer.toggleB2BSubscription()" style="cursor: pointer;" title="Нажмите для переключения B2B-тарифа">
+              <div class="emp-kpi-card" id="kpiTariffCard" onclick="window.Eluma.Employer.openB2BModal()" style="cursor: pointer;" title="Нажмите для управления B2B-тарифом">
                 <div class="kpi-icon-wrap tariff">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 </div>
@@ -351,24 +351,34 @@
                     <button type="button" class="preset-chip" onclick="document.getElementById('taskPriceInput').value=4500; window.Eluma.Employer.updateCreateEscrowCalc();">4 500 ₽</button>
                   </div>
 
-                  <!-- Динамический расчёт холдирования эскроу (7% платформенный сбор) -->
+                  <!-- Динамический расчёт холдирования эскроу (7% платформенный сбор за ИТ-услуги) -->
                   <div class="escrow-calc-breakdown" id="createOrderEscrowCalc">
                     <div class="calc-row">
-                      <span class="calc-label">На руки исполнителю (0% комиссии):</span>
+                      <span class="calc-label">Вознаграждение исполнителю (100% на руки по СБП):</span>
                       <strong class="calc-value" id="calcWorkerPayout">2 500 ₽</strong>
                     </div>
                     <div class="calc-row">
-                      <span class="calc-label">Сервисный сбор платформы (7%, включая 1% в Гарантийный пул):</span>
+                      <span class="calc-label" id="calcPlatformFeeLabel">Сервисный сбор платформы за ИТ-услуги (7% или 0% по B2B):</span>
                       <span class="calc-value fee" id="calcPlatformFee">+175 ₽</span>
                     </div>
                     <div class="calc-row emergency-option-row">
                       <label class="calc-checkbox-label">
                         <input type="checkbox" id="taskUrgentSosCheckbox" onchange="window.Eluma.Employer.updateCreateEscrowCalc()">
-                        <span>Срочный СОС-вызов (пуш по радиусу 3 км) — +190 ₽</span>
+                        <span id="taskUrgentSosLabel">Срочный СОС-вызов (пуш по радиусу 3 км) — +190 ₽</span>
                       </label>
                     </div>
+                    <!-- Чекбокс фильтра: Только Профи 4.8+ -->
+                    <div class="calc-row only-pro-option-row" style="margin-top: 6px;">
+                      <label class="calc-checkbox-label">
+                        <input type="checkbox" id="taskOnlyProCheckbox" onchange="window.Eluma.Employer.updateCreateEscrowCalc()">
+                        <span>Допустить только со статусом «Проверенный Профи 4.8+» (10+ смен без споров) — доступно в B2B-подписке</span>
+                      </label>
+                      <div class="pro-filter-hint" style="font-size: 11.5px; color: #6B7280; margin-top: 4px; line-height: 1.35;">
+                        Для обычных исполнителей автоматически действует 72-часовое гарантийное удержание выплаты после фото «ПОСЛЕ» на случай обнаружения скрытого брака.
+                      </div>
+                    </div>
                     <div class="calc-row total-row">
-                      <span class="calc-label">Итого к холдированию в Eluma Safe:</span>
+                      <span class="calc-label">Итого к заморозке на буферном счёте банка:</span>
                       <strong class="calc-value total" id="calcTotalEscrow">2 675 ₽</strong>
                     </div>
                   </div>
@@ -425,6 +435,9 @@
               </div>
               <p class="detail-desc-paragraph" id="empDetailDesc">-</p>
             </div>
+
+            <!-- СТЕППЕР ELUMA SAFE (6 ЭТАПОВ СДЕЛКИ И ГАРАНТИЙНОГО ХОЛДА) -->
+            <div class="emp-stepper-card" id="empDetailStepperContainer"></div>
 
             <!-- ПУБЛИЧНАЯ КАРТОЧКА НАЗНАЧЕННОГО ИСПОЛНИТЕЛЯ (Раздел 6 мастер-промпта) -->
             <div class="emp-worker-card-section">
@@ -516,24 +529,84 @@
         <!-- 5. ЭКРАН: БАЛАНС И ЧЕКИ ФНС (BALANCE) -->
         <section class="screen" id="scr-emp-balance">
           <div class="balance-screen-wrap">
-            <div class="payout-balance-hero">
-              <span class="payout-hero-label">В безопасном холде (Eluma Safe)</span>
-              <strong class="payout-hero-amount" id="empBalanceReserved">0 ₽</strong>
-              <div class="balance-available-line">
-                <span>Тарифный план:</span>
-                <strong id="empBalanceAvailable">B2B-Подписка (0% комиссии)</strong>
+            <!-- 3 верхние сводные плашки на вкладке Финансов -->
+            <div class="finance-kpi-grid">
+              <!-- Плашка 1: Зарезервировано в банке прямо сейчас -->
+              <div class="finance-kpi-card">
+                <div class="finance-kpi-header">
+                  <div class="finance-kpi-icon bank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </div>
+                  <span class="finance-kpi-label">Зарезервировано в активных сменах</span>
+                </div>
+                <strong class="finance-kpi-amount" id="empBalanceReserved">14 900 ₽</strong>
+                <div class="finance-breakdown-sub" id="empBalanceBreakdown">
+                  <span>На сменах в работе: <strong id="empHoldInWork">11 800 ₽</strong></span>
+                  <span class="breakdown-dot">·</span>
+                  <span>На 72-ч гарантийном удержании: <strong id="empHoldInWarranty">3 100 ₽</strong></span>
+                </div>
               </div>
-              <div class="balance-actions-row">
-                <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.exportEscrowCsv()">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  <span>Скачать реестр чеков ФНС (CSV)</span>
-                </button>
+
+              <!-- Плашка 2: Статус защиты сделок -->
+              <div class="finance-kpi-card">
+                <div class="finance-kpi-header">
+                  <div class="finance-kpi-icon shield">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <span class="finance-kpi-label">Статус защиты сделок</span>
+                </div>
+                <strong class="finance-kpi-status" id="empBalanceAvailable">Двухуровневый холд (72 ч — Новички / 15 мин — Профи 4.8+)</strong>
+                <div class="finance-kpi-desc">
+                  При споре по фото ДО/ПОСЛЕ замороженная сумма смены возвращается на вашу карту или расчетный счет.
+                </div>
+              </div>
+
+              <!-- Плашка 3: Закрывающие документы ФНС -->
+              <div class="finance-kpi-card">
+                <div class="finance-kpi-header">
+                  <div class="finance-kpi-icon doc">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <span class="finance-kpi-label">Закрывающие документы ФНС</span>
+                </div>
+                <strong class="finance-kpi-count" id="empFnsReceiptsCount">8 чеков НПД сформировано</strong>
+                <div class="finance-kpi-action">
+                  <button type="button" class="btn btn-secondary-sm csv-download-btn" onclick="window.Eluma.Employer.exportEscrowCsv()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Скачать единый реестр чеков и актов (CSV)</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="escrow-history-section">
-              <h3 class="section-lead-title">Активные захолдированные смены</h3>
-              <div class="escrow-orders-list" id="empEscrowActiveOrdersList"></div>
+            <!-- Таблица транзакций (история сплитования по сменам) -->
+            <div class="finance-transactions-card">
+              <div class="finance-table-head-row">
+                <div>
+                  <h3 class="section-lead-title">Реестр операций банковского сплита и чеков ФНС</h3>
+                  <span class="finance-head-sub">Автоматическое расщепление платежей по ст. 779 ГК РФ и 422-ФЗ (НПД)</span>
+                </div>
+                <span class="finance-split-badge">Банковский буферный сплит</span>
+              </div>
+
+              <div class="finance-table-responsive">
+                <table class="finance-split-table" id="empFinanceSplitTable">
+                  <thead>
+                    <tr>
+                      <th>Дата и Смена</th>
+                      <th>Исполнитель (ИНН / Статус НПД)</th>
+                      <th>Сумма работы</th>
+                      <th>Сбор площадки (7% / 0% B2B)</th>
+                      <th>Статус банковского холда</th>
+                      <th>Чек ФНС / Цифровой протокол</th>
+                    </tr>
+                  </thead>
+                  <tbody id="empFinanceTableBody">
+                    <!-- Заполняется динамически через JS -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="empEscrowActiveOrdersList" style="display:none;"></div>
             </div>
           </div>
         </section>
@@ -734,6 +807,153 @@
           <li><strong>Недискриминационный допуск:</strong> допуск к смене определяется исключительно успешной сдачей профильного теста квалификации (>= 80% правильных ответов).</li>
         </ul>
         <button type="button" class="btn btn-secondary-outline" style="width:100%;margin-top:16px" onclick="window.Eluma.UI.closeModal('transparencyModal')">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: B2B-Подписка и управление тарифом -->
+  <div class="modal-backdrop" id="b2bTariffModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog b2b-tariff-dialog">
+      <div class="modal-header-line">
+        <div class="b2b-modal-title-wrap">
+          <span class="b2b-pill-badge">B2B Pro</span>
+          <h3 class="modal-main-title">Тариф B2B-Подписка</h3>
+        </div>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('b2bTariffModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="b2b-tariff-modal-body">
+        <div class="b2b-price-hero">
+          <div class="b2b-price-val">790 ₽ <span class="b2b-price-period">/ месяц</span></div>
+          <span class="b2b-payoff-note">Окупается уже с 4-й смены при среднем чеке 3 000 ₽</span>
+        </div>
+
+        <div class="b2b-features-list">
+          <div class="b2b-feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="feature-content">
+              <strong>0% сервисного сбора платформы</strong>
+              <p>Чистая экономия 7% на каждой смене месяца (вместо базового сбора 7% за ИТ-услуги).</p>
+            </div>
+          </div>
+
+          <div class="b2b-feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="feature-content">
+              <strong>2 бесплатных «СОС-вызова» в месяц</strong>
+              <p>Срочный пуш по гео-радару в радиусе 1.5–3 км (в базовой версии — 190 ₽ за каждый вызов).</p>
+            </div>
+          </div>
+
+          <div class="b2b-feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="feature-content">
+              <strong>Фильтр «Только Профи 4.8+»</strong>
+              <p>Одной галочкой ограничивайте отклики только проверенными исполнителями с 10+ чистыми сменами без единого спора.</p>
+            </div>
+          </div>
+
+          <div class="b2b-feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="feature-content">
+              <strong>Приоритетный арбитраж</strong>
+              <p>Разбор спорных ситуаций по фото ДО/ПОСЛЕ модерацией платформы в первую очередь до разморозки банковского холда.</p>
+            </div>
+          </div>
+
+          <div class="b2b-feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="feature-content">
+              <strong>Управление сетью точек и авторасписание</strong>
+              <p>Многопользовательский доступ для администраторов точек и приоритетный автовызов исполнителей из вашего «Белого списка».</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="b2b-status-banner" id="b2bModalStatusBanner"></div>
+
+        <div class="modal-actions-grid" style="margin-top: 16px;">
+          <button type="button" class="btn btn-primary-cta" id="b2bToggleBtn" onclick="window.Eluma.Employer.toggleB2BFromModal()">
+            Управление подпиской
+          </button>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('b2bTariffModal')">Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Арбитраж сделки и открытие спора (72-часовой гарантийный холд) -->
+  <div class="modal-backdrop" id="disputeModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog dispute-modal-dialog">
+      <div class="modal-header-line">
+        <div class="dispute-modal-title-box">
+          <span class="dispute-alert-badge">Арбитраж Eluma Safe</span>
+          <h3 class="modal-main-title">Открытие спора по смене</h3>
+        </div>
+        <button class="modal-close-ico" onclick="window.Eluma.UI.closeModal('disputeModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="dispute-modal-body">
+        <div class="dispute-hold-alert">
+          <div class="hold-alert-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="hold-alert-text">
+            <strong id="disputeHoldStatusTitle">Выплата исполнителю принудительно заморожена на буферном счёте банка до решения спора</strong>
+            <p>Гарантийный 72-часовой холд защищает ваши средства. Выплата не будет перечислена исполнителю до урегулирования инцидента.</p>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="form-label">Причина открытия спора:</label>
+          <div class="dispute-reasons-list">
+            <label class="dispute-radio-row">
+              <input type="radio" name="disputeReason" value="quality" checked>
+              <span class="dispute-radio-label">Скрытый брак / некачественная работа</span>
+            </label>
+            <label class="dispute-radio-row">
+              <input type="radio" name="disputeReason" value="damage">
+              <span class="dispute-radio-label">Порча инвентаря или товара (зафиксировано на фото ДО/ПОСЛЕ)</span>
+            </label>
+            <label class="dispute-radio-row">
+              <input type="radio" name="disputeReason" value="left_early">
+              <span class="dispute-radio-label">Исполнитель покинул точку раньше времени</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="disputeCommentInput">Описание дефекта или инцидента:</label>
+          <textarea id="disputeCommentInput" class="form-textarea" rows="3" placeholder="Опишите обнаруженный дефект, приложите фото брака..."></textarea>
+        </div>
+
+        <div class="dispute-actions-stack">
+          <!-- Кнопка 1: Блокировка и возврат суммы -->
+          <button type="button" class="btn btn-primary-cta danger" id="btnDisputeRefund" onclick="window.Eluma.Employer.confirmDisputeRefund()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span id="btnDisputeRefundText">Заблокировать выплату и вернуть сумму смены</span>
+          </button>
+
+          <!-- Кнопка 2: Выгрузка заверенного цифрового протокола и бан по ИНН -->
+          <button type="button" class="btn btn-secondary-outline danger" onclick="window.Eluma.Employer.downloadDigitalProtocol()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Выгрузить заверенный Цифровой протокол сделки + Забанить по ИНН</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

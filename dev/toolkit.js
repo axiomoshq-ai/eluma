@@ -229,7 +229,7 @@
             <div class="dev-control-group">
               <label class="dev-control-label">Баланс эскроу заказчика:</label>
               <button type="button" class="dev-action-btn" onclick="window.Eluma.DevToolkit.topUpEscrow(10000)">
-                <strong>+10 000 ₽ на эскроу-депозит</strong> <span>Мгновенное тестовое пополнение</span>
+                <strong>+10 000 ₽ на эскроу-счёт</strong> <span>Мгновенное тестовое пополнение</span>
               </button>
             </div>
           </div>

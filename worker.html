@@ -342,6 +342,23 @@
                 <!-- Виджет ближайшей смены -->
                 <div class="nearest-booking-widget" id="workerNearestBookingWidget"></div>
 
+                <!-- Виджет уровня выплат (Стандарт 72 ч -> Профи 15 мин) -->
+                <div class="worker-payout-level-widget" id="workerPayoutLevelWidget">
+                  <div class="payout-level-head">
+                    <div class="payout-level-title-group">
+                      <span class="payout-level-pill">Статус выплат</span>
+                      <h4 class="payout-level-title">Мой уровень выплат: Стандарт (72 ч) <span class="arrow-sep"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span> Профи (15 мин)</h4>
+                    </div>
+                    <span class="payout-level-metric"><strong>7 из 10</strong> смен · Рейтинг <strong>4.9</strong></span>
+                  </div>
+                  <div class="payout-progress-track">
+                    <div class="payout-progress-fill" style="width: 70%;"></div>
+                  </div>
+                  <p class="payout-level-desc">
+                    По завершении смены вознаграждение удерживается на 72 часа для гарантии Заказчика от скрытого брака. Выполните ещё 3 смены с рейтингом выше 4.8, чтобы разблокировать моментальные выплаты по СБП за 15 минут!
+                  </p>
+                </div>
+
                 <!-- Список карточек смен -->
                 <div class="worker-tasks-list" id="workerTasksList"></div>
               </div>
@@ -387,6 +404,23 @@
                 <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Worker.withdrawAvailablePayout()">
                   Вывести на карту СБП (15 мин)
                 </button>
+              </div>
+
+              <!-- Информационный виджет уровня выплат на экране дохода -->
+              <div class="worker-payout-level-widget on-payouts">
+                <div class="payout-level-head">
+                  <div class="payout-level-title-group">
+                    <span class="payout-level-pill">Статус выплат</span>
+                    <h4 class="payout-level-title">Мой уровень выплат: Стандарт (72 ч) <span class="arrow-sep"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span> Профи (15 мин)</h4>
+                  </div>
+                  <span class="payout-level-metric"><strong>7 из 10</strong> смен · Рейтинг <strong>4.9</strong></span>
+                </div>
+                <div class="payout-progress-track">
+                  <div class="payout-progress-fill" style="width: 70%;"></div>
+                </div>
+                <p class="payout-level-desc">
+                  По завершении смены вознаграждение удерживается на 72 часа для гарантии Заказчика от скрытого брака. Выполните ещё 3 смены с рейтингом выше 4.8, чтобы разблокировать моментальные выплаты по СБП за 15 минут!
+                </p>
               </div>
 
               <!-- Плашка гарантийного холда 72 ч для статуса Стандарт/Новичок -->

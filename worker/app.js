@@ -944,7 +944,7 @@
       const cardWidth = card.offsetWidth || 290;
       const cardHeight = card.offsetHeight || 240;
 
-      // Центрируем по горизонтали относительно точки со страховкой от выхода за границы карты
+      // Центрируем по горизонтали относительно точки с защитой от выхода за границы карты
       const minLeft = 10;
       const maxLeft = Math.max(minLeft, (wrapRect.width || 400) - cardWidth - 10);
       let cardLeft = pinCenterX - (cardWidth / 2);

@@ -526,7 +526,7 @@
     } else {
       commandPaletteItems.push(
         { id: 'create', title: 'Создать новую смену (Публикация)', shortcut: 'C', action: () => { if (window.Eluma.Employer) window.Eluma.Employer.navigate('create'); } },
-        { id: 'topup', title: 'Пополнить депозит эскроу (+10 000 ₽)', shortcut: 'T', action: () => { if (window.Eluma.Employer) window.Eluma.Employer.topUpEscrow(10000); } },
+        { id: 'topup', title: 'Пополнить буферный эскроу-счёт (+10 000 ₽)', shortcut: 'T', action: () => { if (window.Eluma.Employer) window.Eluma.Employer.topUpEscrow(10000); } },
         { id: 'csv', title: 'Выгрузить реестр смен в CSV', shortcut: 'E', action: () => { if (window.Eluma.Employer) window.Eluma.Employer.exportEscrowCsv(); } }
       );
     }

@@ -28,7 +28,8 @@
     activeChatOrderId: null,
     editingMemoOrderId: null,
     reworkOrderId: null,
-    reviewOrderId: null
+    reviewOrderId: null,
+    disputeOrderId: null
   };
 
   // Закрытие выпадающих меню по клику вне карточки
@@ -282,15 +283,80 @@
     }
   }
 
-  function toggleB2BSubscription() {
-    empState.isB2BSubscribed = !empState.isB2BSubscribed;
-    const msg = empState.isB2BSubscribed
-      ? 'B2B-подписка активирована: 0% сбор платформы'
-      : 'Включен Базовый тариф: 7% сбор платформы';
-    if (UI && UI.showToast) {
-      UI.showToast(msg, 'info');
+  function openB2BModal() {
+    const modal = document.getElementById('b2bTariffModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    updateB2BModalUI();
+  }
+
+  function closeB2BModal() {
+    const modal = document.getElementById('b2bTariffModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none';
     }
+  }
+
+  function updateB2BModalUI() {
+    const statusBanner = document.getElementById('b2bModalStatusBanner');
+    const toggleBtn = document.getElementById('b2bModalToggleBtn');
+    const isSubscribed = !!empState.isB2BSubscribed;
+
+    if (statusBanner) {
+      if (isSubscribed) {
+        statusBanner.className = 'b2b-modal-status-banner active';
+        statusBanner.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <div class="status-banner-text">
+            <strong>B2B-Подписка активна (0% сбор)</strong>
+            <span>Продление 24 ноября 2026 · Безлимитные публикации смен</span>
+          </div>
+        `;
+      } else {
+        statusBanner.className = 'b2b-modal-status-banner inactive';
+        statusBanner.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="status-banner-text">
+            <strong>Действует Тариф Базовый</strong>
+            <span>Сбор платформы за ИТ-услуги 7% с каждой смены</span>
+          </div>
+        `;
+      }
+    }
+
+    if (toggleBtn) {
+      if (isSubscribed) {
+        toggleBtn.className = 'btn btn-secondary-outline w-full';
+        toggleBtn.textContent = 'Приостановить подписку (перейти на 7% сбор)';
+      } else {
+        toggleBtn.className = 'btn btn-primary-cta w-full';
+        toggleBtn.textContent = 'Подключить B2B за 790 ₽/мес (0% сбор)';
+      }
+    }
+  }
+
+  function toggleB2BFromModal() {
+    empState.isB2BSubscribed = !empState.isB2BSubscribed;
+    const prof = store.getCurrentEmployerProfile();
+    if (prof) {
+      prof.type = empState.isB2BSubscribed ? 'business' : 'private';
+      store.save('b2b_toggle');
+    }
+    updateB2BModalUI();
+    updateSidebarEscrow();
     renderEmployerOrders();
+    renderEmployerBalance();
+    updateCreateEscrowCalc();
+    const msg = empState.isB2BSubscribed
+      ? 'Подписка B2B активирована! Сбор платформы 0%, доступны 2 СОС-вызова и фильтр Профи.'
+      : 'Подписка B2B приостановлена. Действует тариф Базовый (7% сбор платформы).';
+    UI.showFeedbackToast(empState.isB2BSubscribed ? 'B2B активен' : 'Тариф изменён', msg);
+  }
+
+  function toggleB2BSubscription() {
+    openB2BModal();
   }
 
   function setStatusFilter(status) {
@@ -353,11 +419,11 @@
     const holdAmount = empState.isB2BSubscribed ? basePrice : Math.round(basePrice * 1.07);
     const holdFee = Math.round(basePrice * 0.07);
     const holdInfoText = empState.isB2BSubscribed
-      ? `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (0% сбор по подписке)`
-      : `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (вкл. сбор 7% — ${holdFee} ₽)`;
+      ? `В безопасном холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (0% сбор по подписке)`
+      : `В безопасном холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (вкл. сбор 7% — ${holdFee} ₽)`;
 
     // Определение контекстного действия
-    const sosLabel = empState.isB2BSubscribed ? 'СОС-вызов (бесплатно по B2B)' : 'СОС-вызов (+190 ₽)';
+    const sosLabel = empState.isB2BSubscribed ? 'СОС-вызов (бесплатно в B2B)' : 'СОС-вызов (+190 ₽)';
     const sosBtnHtml = `
       <button type="button" class="btn-sos btn-emp-primary-action sos" onclick="window.Eluma.Employer.enableSos(${order.id})">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -385,8 +451,13 @@
       }
     } else if (order.status === 'in_review') {
       primaryActionBtnHtml = `
-        <button type="button" class="btn-secondary-sm btn-emp-primary-action review" onclick="window.Eluma.Employer.openDetail(${order.id})">
-          <span>Проверить фото ДО/ПОСЛЕ</span>
+        <button type="button" class="btn btn-primary-cta btn-emp-primary-action success" onclick="event.stopPropagation(); window.Eluma.Employer.acceptWork(${order.id})">
+          ${UI.SVG_ICONS.check}
+          <span>Принять работу (разморозить выплату)</span>
+        </button>
+        <button type="button" class="btn btn-secondary-outline danger btn-emp-primary-action" onclick="event.stopPropagation(); window.Eluma.Employer.openDisputeModal(${order.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Открыть спор (заблокировать выплату)</span>
         </button>
       `;
     } else if (order.status === 'assigned' || order.status === 'on_site') {
@@ -409,6 +480,13 @@
       `;
     }
 
+    const holdBannerHtml = order.status === 'in_review' ? `
+      <div class="shift-card__warranty-alert">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Гарантийный холд 72 ч активен · До автовыплаты 47 ч 18 мин (защита от скрытых дефектов)</span>
+      </div>
+    ` : '';
+
     return `
       <article class="shift-card employer-task-card" onclick="window.Eluma.Employer.openDetail(${order.id})">
         <!-- 1. Верхний эталонный Flexbox-блок (.shift-card__main) -->
@@ -424,9 +502,9 @@
             <div class="shift-card__badges">
               ${UI.renderStatusBadge(order.status)}
               <span class="badge badge-category">${UI.escapeHtml(order.category)}</span>
-              <span class="badge badge-safe" title="Зарезервировано в холде Eluma Safe">
+              <span class="badge badge-safe" title="В безопасном холде банка · 72 ч гарантия скрытых дефектов">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>В холде Eluma Safe</span>
+                <span>В безопасном холде банка · 72 ч гарантия</span>
               </span>
               ${slotsBadgeHtml}
             </div>
@@ -454,6 +532,8 @@
             <div class="shift-card__hold-info">${holdInfoText}</div>
           </div>
         </div>
+
+        ${holdBannerHtml}
 
         <!-- 2. Нижний блок футера карточки: всегда на всю ширину -->
         <div class="shift-card__footer" onclick="event.stopPropagation()">
@@ -526,6 +606,53 @@
   // --------------------------------------------------------------------------
   // 4. ЭКРАН: ОТКЛИКИ И ЧАТЫ (CHATS & DEAL CONTROL) — ПОЛНАЯ ВЫСОТА
   // --------------------------------------------------------------------------
+
+  function renderElumaSafeStepperHtml(order) {
+    const hasWorker = !!(order.assignedWorkerId || (order.assignedWorkerIds && order.assignedWorkerIds.length > 0));
+    const step1Done = true; // 1. Бронирование и холд средств в банке
+    const step2Done = hasWorker; // 2. Назначение исполнителя (проверка допуска)
+    const step3Done = order.status === 'on_site' || order.status === 'in_review' || order.status === 'completed'; // 3. Гео-фиксация прибытия (GPS 150м)
+    const step4Done = !!(order.proofs && order.proofs.before && order.proofs.after); // 4. Загрузка фото ДО и ПОСЛЕ
+    const step5Done = order.status === 'completed'; // 5. Гарантийный холд 72 ч
+    const step5Active = order.status === 'in_review';
+    const step6Done = order.status === 'completed'; // 6. Автоматическая выплата по СБП и чек ФНС
+
+    const arrowSvg = `<span class="stepper-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>`;
+
+    return `
+      <div class="eluma-safe-stepper">
+        <div class="stepper-step ${step1Done ? 'done' : 'active'}">
+          <span class="step-circle">${step1Done ? '1' : '1'}</span>
+          <span class="step-label">1. Холд в банке</span>
+        </div>
+        ${arrowSvg}
+        <div class="stepper-step ${step2Done ? 'done' : (step1Done ? 'active' : '')}">
+          <span class="step-circle">2</span>
+          <span class="step-label">2. Назначение и допуск</span>
+        </div>
+        ${arrowSvg}
+        <div class="stepper-step ${step3Done ? 'done' : (step2Done ? 'active' : '')}">
+          <span class="step-circle">3</span>
+          <span class="step-label">3. GPS Чек-ин 150м</span>
+        </div>
+        ${arrowSvg}
+        <div class="stepper-step ${step4Done ? 'done' : (step3Done ? 'active' : '')}">
+          <span class="step-circle">4</span>
+          <span class="step-label">4. Фото ДО / ПОСЛЕ</span>
+        </div>
+        ${arrowSvg}
+        <div class="stepper-step ${step5Done ? 'done' : (step5Active ? 'active' : '')}">
+          <span class="step-circle">5</span>
+          <span class="step-label">5. Гарантийный холд 72 ч</span>
+        </div>
+        ${arrowSvg}
+        <div class="stepper-step ${step6Done ? 'done' : (step5Done ? 'active' : '')}">
+          <span class="step-circle">6</span>
+          <span class="step-label">6. СБП и чек ФНС</span>
+        </div>
+      </div>
+    `;
+  }
 
   function renderEmployerChats() {
     const listEl = document.getElementById('empChatsList');
@@ -637,15 +764,7 @@
       `;
       return;
     }
-
     // СОСТОЯНИЕ Б: Есть отклики или Исполнитель в работе (Eluma Safe Stepper + Чат)
-    const step1Done = true; // Холд оплачен
-    const step2Done = hasWorker; // Допуск сдан
-    const step3Done = order.status === 'on_site' || order.status === 'in_review' || order.status === 'completed'; // GPS чек-ин
-    const step4Done = !!(order.proofs && order.proofs.before); // Фото ДО
-    const step5Done = !!(order.proofs && order.proofs.after); // Фото ПОСЛЕ
-    const step6Done = order.status === 'completed'; // Автовыплата
-
     panelEl.innerHTML = `
       <div class="chat-dialog-head">
         <div class="chat-head-left">
@@ -659,37 +778,7 @@
       </div>
 
       <!-- Eluma Safe Stepper (Трекер этапов сделки в 6 шагов) -->
-      <div class="eluma-safe-stepper">
-        <div class="stepper-step ${step1Done ? 'done' : 'active'}">
-          <span class="step-circle">${step1Done ? '1' : '1'}</span>
-          <span class="step-label">1. Холд оплачен</span>
-        </div>
-        <div class="stepper-arrow">→</div>
-        <div class="stepper-step ${step2Done ? 'done' : 'active'}">
-          <span class="step-circle">2</span>
-          <span class="step-label">2. Допуск сдан</span>
-        </div>
-        <div class="stepper-arrow">→</div>
-        <div class="stepper-step ${step3Done ? 'done' : (hasWorker ? 'active' : '')}">
-          <span class="step-circle">3</span>
-          <span class="step-label">3. GPS Чек-ин</span>
-        </div>
-        <div class="stepper-arrow">→</div>
-        <div class="stepper-step ${step4Done ? 'done' : (step3Done ? 'active' : '')}">
-          <span class="step-circle">4</span>
-          <span class="step-label">4. Фото ДО</span>
-        </div>
-        <div class="stepper-arrow">→</div>
-        <div class="stepper-step ${step5Done ? 'done' : (step4Done ? 'active' : '')}">
-          <span class="step-circle">5</span>
-          <span class="step-label">5. Фото ПОСЛЕ</span>
-        </div>
-        <div class="stepper-arrow">→</div>
-        <div class="stepper-step ${step6Done ? 'done' : (step5Done ? 'active' : '')}">
-          <span class="step-circle">6</span>
-          <span class="step-label">6. Выплата (15 мин)</span>
-        </div>
-      </div>
+      ${renderElumaSafeStepperHtml(order)}
 
       <!-- Контейнер сообщений чата с авто-скроллом -->
       <div class="order-chat-messages" id="empSplitChatMessages"></div>
@@ -824,6 +913,11 @@
     }
     if (badgeEl) {
       badgeEl.innerHTML = UI.renderStatusBadge(order.status);
+    }
+
+    const stepperContainer = document.getElementById('empDetailStepperContainer');
+    if (stepperContainer) {
+      stepperContainer.innerHTML = renderElumaSafeStepperHtml(order);
     }
 
     renderAssignedWorkerCard(order);
@@ -965,12 +1059,38 @@
 
     if (order.status === 'in_review') {
       actionsContainer.innerHTML = `
+        <div class="emp-warranty-hold-banner">
+          <div class="warranty-hold-banner-head">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="banner-title-group">
+              <strong>Гарантийный период 72 часа активен</strong>
+              <span class="timer-badge">47:18:22</span>
+            </div>
+          </div>
+          <p class="warranty-hold-banner-desc">Исполнитель получит вознаграждение автоматически через 47:18:22, если вы не заявите о скрытых дефектах. Средства находятся в гарантийном буфере банка.</p>
+        </div>
         <div class="emp-action-buttons-grid">
           <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.acceptWork(${order.id})">
-            ${UI.SVG_ICONS.check} Принять смену и выплатить ${UI.escapeHtml(order.price)}
+            ${UI.SVG_ICONS.check}
+            <span>Принять работу досрочно (разморозить выплату)</span>
           </button>
-          <button type="button" class="btn btn-secondary-outline danger" onclick="window.Eluma.Employer.openReworkModal(${order.id})">
-            Вернуть на доработку с замечаниями
+          <button type="button" class="btn btn-secondary-outline danger" onclick="window.Eluma.Employer.openDisputeModal(${order.id})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Заявить о дефектах / Открыть спор</span>
+          </button>
+        </div>
+      `;
+    } else if (order.status === 'disputed') {
+      actionsContainer.innerHTML = `
+        <div class="emp-disputed-banner">
+          <div class="disputed-banner-head">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <strong>Выплата заблокирована. Открыт спор.</strong>
+          </div>
+          <p class="disputed-banner-desc">Средства в размере ${UI.escapeHtml(order.price)} возвращены на ваш буферный счёт. Исполнитель заблокирован по ИНН. Сформирован цифровой протокол.</p>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.Employer.downloadDigitalProtocol(${order.id})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Скачать Электронный протокол для МВД / суда</span>
           </button>
         </div>
       `;
@@ -995,6 +1115,74 @@
     } else {
       actionsContainer.innerHTML = '';
     }
+  }
+
+  function openDisputeModal(orderId) {
+    empState.disputeOrderId = orderId;
+    const order = store.getEmployerOrders().find(o => o.id === orderId);
+    const modal = document.getElementById('disputeModal');
+    const amountEl = document.getElementById('disputeHoldAmountText');
+    const titleEl = document.getElementById('disputeOrderTitle');
+
+    if (amountEl && order) {
+      amountEl.textContent = `${order.price} (заморожено в буфере банка)`;
+    }
+    if (titleEl && order) {
+      titleEl.textContent = order.title;
+    }
+    if (modal) {
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+    }
+  }
+
+  function closeDisputeModal() {
+    const modal = document.getElementById('disputeModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+    }
+  }
+
+  function confirmDisputeRefund() {
+    if (!empState.disputeOrderId) return;
+    const reasonRadio = document.querySelector('input[name="disputeReason"]:checked');
+    const reason = reasonRadio ? reasonRadio.value : 'poor_quality';
+    const notesInput = document.getElementById('disputeNotesInput');
+    const notes = notesInput ? notesInput.value.trim() : '';
+
+    store.openDispute(empState.disputeOrderId, { reason, notes });
+    closeDisputeModal();
+
+    UI.showFeedbackToast(
+      'Выплата заблокирована!',
+      'Средства возвращены на эскроу-счёт. Исполнитель отстранён по ИНН. Протокол сформирован.'
+    );
+    renderEmployerOrders();
+    renderEmployerBalance();
+    if (empState.currentScreen === 'detail') {
+      renderOrderDetail(empState.disputeOrderId);
+    }
+  }
+
+  function downloadDigitalProtocol(customOrderId) {
+    const targetId = customOrderId || empState.disputeOrderId;
+    if (!targetId) return;
+    const protocolText = store.getDigitalProtocol(targetId);
+    const blob = new Blob([protocolText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eluma_digital_protocol_shift_${targetId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    UI.showFeedbackToast(
+      'Протокол сформирован',
+      'Цифровой документ с фиксацией ДО/ПОСЛЕ, GPS и ИНН сохранён для передачи в органы / суд.'
+    );
   }
 
   function resolveCounterOffer(orderId, accept) {
@@ -1118,19 +1306,39 @@
 
   function updateCreateEscrowCalc() {
     const priceInput = document.getElementById('taskPriceInput');
+    const slotsSelect = document.getElementById('taskSlotsSelect');
     const sosCheckbox = document.getElementById('taskUrgentSosCheckbox');
+    const sosLabel = document.getElementById('taskUrgentSosLabel');
     const workerPayoutEl = document.getElementById('calcWorkerPayout');
     const platformFeeEl = document.getElementById('calcPlatformFee');
     const totalEscrowEl = document.getElementById('calcTotalEscrow');
 
-    const workerReward = parseInt(priceInput ? priceInput.value : 2500, 10) || 0;
-    const serviceFee = Math.round(workerReward * 0.07);
-    const sosFee = (sosCheckbox && sosCheckbox.checked) ? 190 : 0;
+    const singleReward = parseInt(priceInput ? priceInput.value : 2500, 10) || 0;
+    const slotsCount = parseInt(slotsSelect ? slotsSelect.value : 1, 10) || 1;
+    const workerReward = singleReward * slotsCount;
+
+    const isB2B = !!empState.isB2BSubscribed;
+    const serviceFee = isB2B ? 0 : Math.round(workerReward * 0.07);
+    const sosFee = (sosCheckbox && sosCheckbox.checked) ? (isB2B ? 0 : 190) : 0;
     const total = workerReward + serviceFee + sosFee;
 
-    if (workerPayoutEl) workerPayoutEl.textContent = `${workerReward.toLocaleString('ru-RU')} ₽`;
-    if (platformFeeEl) platformFeeEl.textContent = `+${serviceFee.toLocaleString('ru-RU')} ₽`;
-    if (totalEscrowEl) totalEscrowEl.textContent = `${total.toLocaleString('ru-RU')} ₽`;
+    if (sosLabel) {
+      sosLabel.textContent = isB2B
+        ? 'Срочный СОС-вызов (включено в подписку B2B — 0 ₽)'
+        : 'Срочный СОС-вызов (пуш по радиусу 3 км) — +190 ₽';
+    }
+
+    if (workerPayoutEl) {
+      workerPayoutEl.textContent = slotsCount > 1
+        ? `${workerReward.toLocaleString('ru-RU')} ₽ (${singleReward.toLocaleString('ru-RU')} ₽ × ${slotsCount} чел.)`
+        : `${workerReward.toLocaleString('ru-RU')} ₽`;
+    }
+    if (platformFeeEl) {
+      platformFeeEl.textContent = isB2B ? '0 ₽ (B2B-подписка)' : `+${serviceFee.toLocaleString('ru-RU')} ₽ (7% ИТ-сбор)`;
+    }
+    if (totalEscrowEl) {
+      totalEscrowEl.textContent = `${total.toLocaleString('ru-RU')} ₽`;
+    }
   }
 
   function initCreateForm() {
@@ -1156,6 +1364,7 @@
     const daySelect = document.getElementById('taskDaySelect');
     const startSelect = document.getElementById('taskStartTimeSelect');
     const sosCheckbox = document.getElementById('taskUrgentSosCheckbox');
+    const proCheckbox = document.getElementById('taskOnlyProCheckbox');
     const isBiz = document.querySelector('input[name="orderType"]:checked')?.value === 'business';
 
     const title = titleEl ? titleEl.value.trim() : '';
@@ -1167,6 +1376,7 @@
     const hours = parseFloat(hoursEl ? hoursEl.value : 3);
     const slotsTotal = parseInt(slotsEl ? slotsEl.value : 1, 10) || 1;
     const memo = memoEl ? memoEl.value.trim() : '';
+    const isOnlyPro = !!(proCheckbox && proCheckbox.checked);
 
     if (!title || !rawPrice) {
       UI.showFeedbackToast('Ошибка', 'Заполните название и бюджет смены');
@@ -1188,9 +1398,9 @@
     const customerName = (prof && prof.companyName) ? prof.companyName : (user ? user.name : 'Заказчик');
 
     const isSos = !!(sosCheckbox && sosCheckbox.checked);
-    const serviceFee = Math.round(rawPrice * 0.07);
-    const sosFee = isSos ? 190 : 0;
-    const totalWithFee = rawPrice + serviceFee + sosFee;
+    const serviceFee = empState.isB2BSubscribed ? 0 : Math.round(rawPrice * slotsTotal * 0.07);
+    const sosFee = isSos ? (empState.isB2BSubscribed ? 0 : 190) : 0;
+    const totalWithFee = (rawPrice * slotsTotal) + serviceFee + sosFee;
 
     if (!prof.escrow) prof.escrow = { reserved: 0, available: 0 };
     prof.escrow.reserved = (prof.escrow.reserved || 0) + totalWithFee;
@@ -1212,13 +1422,14 @@
       serviceFee: serviceFee,
       sosFee: sosFee,
       totalEscrow: totalWithFee,
+      onlyPro: isOnlyPro,
       lat: 53.2185,
       lng: 50.1642,
       comment: comment || 'Выполнение смены согласно правилам платформы.',
       objectMemo: memo || 'Спецодежда и рохли выдаются на проходной базы по паспорту. Код двери: #4210',
       customerName: customerName,
       customerRating: '4.98',
-      perks: isSos ? ['Срочный СОС-вызов', 'СБП 15 мин', 'Eluma Safe Эскроу'] : ['СБП 15 мин', 'Eluma Safe Эскроу'],
+      perks: isSos ? ['Срочный СОС-вызов', 'СБП 15 мин', 'В безопасном холде'] : ['СБП 15 мин', 'В безопасном холде'],
       status: 'searching',
       assignedWorkerId: null,
       slotsTotal: slotsTotal,
@@ -1231,7 +1442,8 @@
     store.state.orders.unshift(newOrder);
 
     store.save('order_created');
-    UI.showFeedbackToast('Смена опубликована!', `${totalWithFee.toLocaleString('ru-RU')} ₽ захолдированы в Eluma Safe (включая сбор 7%).`);
+    const feeMsg = empState.isB2BSubscribed ? '(0% сбор по подписке B2B)' : '(включая сбор платформы 7%)';
+    UI.showFeedbackToast('Смена опубликована!', `${totalWithFee.toLocaleString('ru-RU')} ₽ захолдированы в безопасном буфере банка ${feeMsg}.`);
     showScreen('home');
   }
 
@@ -1244,13 +1456,102 @@
     const resEl = document.getElementById('empBalanceReserved');
     const availEl = document.getElementById('empBalanceAvailable');
     const ordersListEl = document.getElementById('empEscrowActiveOrdersList');
+    const holdInWorkEl = document.getElementById('empHoldInWork');
+    const holdInWarrantyEl = document.getElementById('empHoldInWarranty');
+    const fnsCountEl = document.getElementById('empFnsReceiptsCount');
+    const tableBody = document.getElementById('empFinanceTableBody');
 
-    const reservedAmount = store.getEmployerReservedAmount ? store.getEmployerReservedAmount() : (prof.escrow ? prof.escrow.reserved : 0);
-    if (resEl) resEl.textContent = `${reservedAmount.toLocaleString('ru-RU')} ₽`;
-    if (availEl) availEl.textContent = prof.type === 'business' ? 'B2B-Подписка (0% комиссии)' : 'Тариф Базовый (7% комиссии)';
+    const orders = store.getEmployerOrders();
+    let totalReserved = 0;
+    let inWorkSum = 0;
+    let inWarrantySum = 0;
+
+    orders.forEach(o => {
+      if (o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'disputed') {
+        const base = (o.rawPrice || 0) * (o.slotsTotal || 1);
+        const orderTotal = empState.isB2BSubscribed ? base : Math.round(base * 1.07);
+        totalReserved += orderTotal;
+        if (o.status === 'in_review') {
+          inWarrantySum += orderTotal;
+        } else {
+          inWorkSum += orderTotal;
+        }
+      }
+    });
+
+    if (resEl) resEl.textContent = `${totalReserved.toLocaleString('ru-RU')} ₽`;
+    if (holdInWorkEl) holdInWorkEl.textContent = `${inWorkSum.toLocaleString('ru-RU')} ₽`;
+    if (holdInWarrantyEl) holdInWarrantyEl.textContent = `${inWarrantySum.toLocaleString('ru-RU')} ₽`;
+
+    if (availEl) {
+      availEl.textContent = empState.isB2BSubscribed ? 'B2B-Подписка (0% сбор)' : 'Тариф Базовый (7% сбор)';
+    }
+
+    const transactions = store.getEmployerTransactions ? store.getEmployerTransactions(store.state.currentEmployerId) : [];
+    if (fnsCountEl) {
+      const fnsCount = transactions.filter(t => {
+        const fns = t.fnsCheck || t.receiptNum;
+        return fns && fns !== '-' && !String(fns).includes('Возврат');
+      }).length;
+      fnsCountEl.textContent = `${fnsCount} чеков`;
+    }
+
+    if (tableBody) {
+      if (transactions.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: #6B7280;">Операций пока нет</td></tr>`;
+      } else {
+        tableBody.innerHTML = transactions.map(t => {
+          const holdStatus = t.holdStatus || t.status;
+          let statusBadge = '';
+          if (holdStatus === 'hold_72h') {
+            statusBadge = `<span class="finance-split-badge hold">Холд 72 ч</span>`;
+          } else if (holdStatus === 'paid_sbp') {
+            statusBadge = `<span class="finance-split-badge paid">Выплачено СБП</span>`;
+          } else if (holdStatus === 'refund_dispute') {
+            statusBadge = `<span class="finance-split-badge refund">Возврат (Спор)</span>`;
+          } else {
+            statusBadge = `<span class="finance-split-badge in-work">В работе</span>`;
+          }
+
+          const shiftTitle = t.shiftTitle || t.orderTitle || 'Смена';
+          const district = t.district || (t.orderId && store.state.orders ? (store.state.orders.find(o => o.id === t.orderId)?.district || 'Промышленный р-н') : 'Промышленный р-н');
+          const workerName = t.workerName || 'Исполнитель';
+          const workerInn = t.workerInn || '—';
+          const workerPayout = t.workerPayout != null ? t.workerPayout : (t.amount != null ? t.amount : 0);
+          const platformFee = t.platformFee != null ? t.platformFee : (t.fee != null ? t.fee : 0);
+          const totalCharged = t.totalCharged != null ? t.totalCharged : (workerPayout + platformFee);
+          const fnsVal = t.fnsCheck || t.receiptNum || '';
+
+          const fnsCell = fnsVal && fnsVal !== '-'
+            ? `<span class="fns-check-link" title="Чек зарегистрирован в ФНС РФ">${UI.escapeHtml(fnsVal)}</span>`
+            : `<span class="text-muted">—</span>`;
+
+          return `
+            <tr>
+              <td class="finance-cell-date">${UI.escapeHtml(t.date || '')}</td>
+              <td class="finance-cell-shift">
+                <strong>${UI.escapeHtml(shiftTitle)}</strong>
+                <div class="sub-district">${UI.escapeHtml(district)}</div>
+              </td>
+              <td class="finance-cell-worker">
+                <div>${UI.escapeHtml(workerName)}</div>
+                <div class="sub-inn">ИНН: ${UI.escapeHtml(workerInn)}</div>
+              </td>
+              <td class="finance-cell-amount">${workerPayout.toLocaleString('ru-RU')} ₽</td>
+              <td class="finance-cell-fee">${platformFee > 0 ? `+${platformFee.toLocaleString('ru-RU')} ₽` : '0 ₽ (B2B)'}</td>
+              <td class="finance-cell-total"><strong>${totalCharged.toLocaleString('ru-RU')} ₽</strong></td>
+              <td class="finance-cell-status">
+                ${statusBadge}
+                <div class="finance-cell-fns">${fnsCell}</div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
 
     if (ordersListEl) {
-      const activeOrders = store.getEmployerOrders().filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+      const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
       if (activeOrders.length === 0) {
         ordersListEl.innerHTML = `<div class="empty-feed-card"><p>Нет активных захолдированных смен</p></div>`;
       } else {
@@ -1285,38 +1586,71 @@
   }
 
   function exportEscrowCsv() {
-    const orders = store.getEmployerOrders();
+    const transactions = store.getEmployerTransactions ? store.getEmployerTransactions(store.state.currentEmployerId) : [];
     const rows = [
-      ['ID смены', 'Название смены', 'Категория', 'Район Самары', 'Время', 'Вознаграждение (₽)', 'В холде Eluma Safe (₽)', 'Статус', 'Исполнитель']
+      ['ID операции', 'Дата и время', 'Смена / Объект', 'Район Самары', 'Исполнитель', 'ИНН Исполнителя', 'Выплата самозанятому (100% на руки, ₽)', 'Сбор ИТ-платформы (7% или 0% B2B, ₽)', 'Итого захолдировано / списано (₽)', 'Статус гарантийного холда', 'Электронный чек ФНС']
     ];
 
-    orders.forEach(o => {
-      const worker = o.assignedWorkerId ? store.getUser(o.assignedWorkerId) : null;
-      rows.push([
-        String(o.id),
-        o.title || '',
-        o.category || '',
-        o.district || '',
-        o.time || '',
-        String(o.rawPrice || 0),
-        String(o.totalEscrow || (o.rawPrice + Math.round(o.rawPrice * 0.07))),
-        o.status || '',
-        worker ? worker.name : 'Не назначен'
-      ]);
-    });
+    if (transactions.length > 0) {
+      transactions.forEach(t => {
+        const shiftTitle = t.shiftTitle || t.orderTitle || '';
+        const district = t.district || (t.orderId && store.state.orders ? (store.state.orders.find(o => o.id === t.orderId)?.district || 'Самара') : 'Самара');
+        const workerName = t.workerName || '';
+        const workerInn = t.workerInn || '';
+        const workerPayout = t.workerPayout != null ? t.workerPayout : (t.amount != null ? t.amount : 0);
+        const platformFee = t.platformFee != null ? t.platformFee : (t.fee != null ? t.fee : 0);
+        const totalCharged = t.totalCharged != null ? t.totalCharged : (workerPayout + platformFee);
+        const holdStatus = t.holdStatusText || (t.holdStatus === 'hold_72h' || t.status === 'hold_72h' ? 'Холд 72 ч (проверка качества)' : (t.holdStatus === 'paid_sbp' || t.status === 'paid_sbp' ? 'Выплачено по СБП (Профи 4.8+)' : (t.holdStatus === 'refund_dispute' || t.status === 'refund_dispute' ? 'Возврат Заказчику (Спор)' : 'В работе')));
+        const fnsCheck = t.fnsCheck || t.receiptNum || '—';
+
+        rows.push([
+          String(t.id),
+          t.date || '',
+          shiftTitle,
+          district,
+          workerName,
+          workerInn,
+          String(workerPayout),
+          String(platformFee),
+          String(totalCharged),
+          holdStatus,
+          fnsCheck
+        ]);
+      });
+    } else {
+      const orders = store.getEmployerOrders();
+      orders.forEach(o => {
+        const worker = o.assignedWorkerId ? store.getUser(o.assignedWorkerId) : null;
+        const base = (o.rawPrice || 0) * (o.slotsTotal || 1);
+        const fee = empState.isB2BSubscribed ? 0 : Math.round(base * 0.07);
+        rows.push([
+          String(o.id),
+          '24.10.2026',
+          o.title || '',
+          o.district || '',
+          worker ? worker.name : 'Не назначен',
+          worker ? (worker.inn || '631609823412') : '—',
+          String(base),
+          String(fee),
+          String(base + fee),
+          o.status === 'in_review' ? 'Холд 72 ч' : (o.status === 'completed' ? 'Выплачено по СБП' : 'В работе'),
+          o.status === 'completed' ? `ФНС #${o.id}-63` : '—'
+        ]);
+      });
+    }
 
     const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'eluma_escrow_report_samara.csv');
+    link.setAttribute('download', 'eluma_finance_registry_samara.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    UI.showFeedbackToast('Реестр смен выгружен', 'Файл eluma_escrow_report_samara.csv успешно сохранён');
+    UI.showFeedbackToast('Реестр выгружен', 'Файл CSV с расщеплением выплат и сбора платформы успешно скачан.');
   }
 
   function duplicateOrder(orderId) {
@@ -1388,16 +1722,16 @@
         id: Date.now(),
         orderId: order.id,
         workerId: wid,
-        title: 'Компенсация 400 ₽ за отмену смены после GPS чек-ина на объекте',
-        date: 'Сегодня • Компенсация Т-Банк СБП',
+        title: 'Неустойка 400 ₽ за ложный вызов после прибытия на объект',
+        date: 'Сегодня • Выплата неустойки Т-Банк СБП',
         amount: 400,
         receiptNum: receiptNum,
-        fnsStatus: 'Компенсация за ложный вызов'
+        fnsStatus: 'Неустойка за ложный вызов (ст. 781 ГК РФ)'
       });
-      store.addChatMessage(order.id, 'system', 'Компенсация 400 ₽ за отмену смены после GPS чек-ина на объекте начислена исполнителю.');
+      store.addChatMessage(order.id, 'system', 'Неустойка 400 ₽ за отмену смены после GPS чек-ина на объекте перечислена исполнителю.');
       order.status = 'cancelled';
-      store.save('order_cancelled_with_compensation');
-      UI.showFeedbackToast('Смена отменена с компенсацией', 'Удержана компенсация 400 ₽ в пользу исполнителя, прибывшего на точку');
+      store.save('order_cancelled_with_penalty');
+      UI.showFeedbackToast('Смена отменена с неустойкой', 'Удержана неустойка 400 ₽ в пользу исполнителя, прибывшего на точку');
     } else {
       if (prof && prof.escrow && (order.status === 'searching' || order.status === 'assigned' || order.status === 'draft')) {
         prof.escrow.reserved = Math.max(0, (prof.escrow.reserved || 0) - totalEscrow);
@@ -1611,7 +1945,14 @@
     scrollToQueue: scrollToQueue,
     renderActionQueue: renderActionQueue,
     acceptCounterOffer: acceptCounterOffer,
-    declineCounterOffer: declineCounterOffer
+    declineCounterOffer: declineCounterOffer,
+    openB2BModal: openB2BModal,
+    closeB2BModal: closeB2BModal,
+    toggleB2BFromModal: toggleB2BFromModal,
+    openDisputeModal: openDisputeModal,
+    closeDisputeModal: closeDisputeModal,
+    confirmDisputeRefund: confirmDisputeRefund,
+    downloadDigitalProtocol: downloadDigitalProtocol
   };
 
   window.Olksi.Employer = window.Eluma.Employer;

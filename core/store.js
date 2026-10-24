@@ -1118,7 +1118,7 @@
         this.addChatMessage(
           order.id,
           'system',
-          `Заказчик отменил смену после прибытия исполнителя. Удержана компенсация 400 ₽ в пользу исполнителя. Остаток (${refund} ₽) возвращён заказчику.`
+          `Заказчик отменил смену после прибытия исполнителя. Удержана неустойка 400 ₽ в пользу исполнителя за ложный вызов. Остаток (${refund} ₽) возвращён заказчику.`
         );
       } else {
         // До прибытия: полный возврат средств эскроу заказчику
@@ -1136,6 +1136,90 @@
       this.syncEmployerEscrow(eid);
       this.save('order_cancelled');
       return true;
+    }
+
+    // Открытие спора в рамках 72-часового гарантийного холда
+    openDispute(orderId, disputeData = {}) {
+      const order = (this.state.orders || []).find(o => o.id === orderId);
+      if (!order) return { success: false, error: 'Смена не найдена' };
+
+      order.status = 'disputed';
+      order.dispute = {
+        openedAt: new Date().toISOString(),
+        reasonKey: disputeData.reasonKey || 'quality',
+        reasonText: disputeData.reasonText || 'Скрытый брак / некачественная работа',
+        comment: disputeData.comment || '',
+        status: 'refunded_to_employer'
+      };
+
+      const eid = order.ownerId || 101;
+      const empProf = this.state.employerProfiles && this.state.employerProfiles[eid];
+      const totalAmount = order.totalEscrow || (order.rawPrice + Math.round(order.rawPrice * 0.07));
+
+      if (empProf && empProf.escrow) {
+        empProf.escrow.available = (empProf.escrow.available || 0) + totalAmount;
+        empProf.escrow.reserved = Math.max(0, (empProf.escrow.reserved || 0) - totalAmount);
+      }
+
+      this.addChatMessage(
+        order.id,
+        'system',
+        `Спор открыт в рамках 72-часового гарантийного холда. Выплата исполнителю заблокирована. Замороженная сумма смены (${order.price}) возвращена заказчику на счёт/карту.`
+      );
+
+      // Синхронизация транзакции банковского сплитования
+      if (this.state.employerTransactions) {
+        const tx = this.state.employerTransactions.find(t => t.orderId === orderId);
+        if (tx) {
+          tx.holdStatus = 'refund_dispute';
+          tx.holdStatusText = 'Возврат заказчику по спору (брак)';
+          tx.receiptNum = 'Возврат буфера банка';
+        }
+      }
+
+      this.save('order_disputed');
+      return { success: true, refundedAmount: totalAmount };
+    }
+
+    // Получение транзакций банковского сплитования заказчика
+    getEmployerTransactions(ownerId = 101) {
+      return this.state.employerTransactions || [];
+    }
+
+    // Формирование заверенного цифрового протокола сделки (ст. 779, 1253.1 ГК РФ)
+    getDigitalProtocol(orderId) {
+      const order = (this.state.orders || []).find(o => o.id === orderId);
+      if (!order) return null;
+
+      const workerId = order.assignedWorkerId || (order.assignedWorkerIds && order.assignedWorkerIds[0]) || 6;
+      const worker = this.getUser(workerId) || { name: 'Иван С.', inn: '631204899211' };
+      const workerInn = worker.inn || `6312048992${String(worker.id).padStart(2, '0')}`;
+
+      return {
+        protocolId: `ELUMA-SAFE-DOC-${order.id}-${Date.now().toString().slice(-6)}`,
+        timestamp: new Date().toLocaleString('ru-RU'),
+        legalFramework: 'ГОСТ Р 7.0.97-2016, ст. 779 и 1253.1 ГК РФ, 422-ФЗ (НПД)',
+        orderId: order.id,
+        orderTitle: order.title,
+        orderAddress: `${order.district || 'Самара'}, ${order.address || 'ул. Заводское шоссе, 14'}`,
+        workerName: worker.name,
+        workerInn: workerInn,
+        workerPhoneProtected: `+7 (9••) •••-••-${String(worker.id).padStart(2, '0')}`,
+        orderPrice: order.price,
+        gpsCheckin: {
+          verified: true,
+          coords: (order.proofs && order.proofs.coords) || '53.2384, 50.2189',
+          accuracy: '45 метров от объекта (норматив до 150 м)',
+          time: order.time || '18:00'
+        },
+        proofs: {
+          before: (order.proofs && order.proofs.before) || 'assets/sample_before.jpg',
+          after: (order.proofs && order.proofs.after) || 'assets/sample_after.jpg',
+          hash: 'SHA-256: 4f8b9e1a2c3d5e7f8a9b0c1d2e3f4a5b6c7d8e9f'
+        },
+        disputeStatus: 'Выплата заблокирована. Исполнитель бессрочно заблокирован в реестре платформы по ИНН.',
+        arbitrationSeal: 'ЦСП ЭЦП: АО «Элума Технологии», Самара, Реестр операторов ИТ-платформ №63-0422'
+      };
     }
 
     // Вывод доступных средств по СБП

@@ -847,6 +847,74 @@
           receiptNum: 84102,
           status: 'completed'
         }
+      ],
+
+      // Транзакции банковского сплитования заказчика
+      employerTransactions: [
+        {
+          id: 101,
+          date: '24.10.2026, 18:00',
+          orderTitle: 'Выгрузка партии керамогранита и сухих смесей',
+          orderId: 1,
+          workerName: 'Дмитрий М.',
+          workerInn: '631609823145',
+          npdStatus: 'Самозанятый (НПД активен)',
+          amount: 3200,
+          fee: 0,
+          isB2B: true,
+          holdStatus: 'hold_72h',
+          holdStatusText: 'В холде 72 ч (проверка скрытых дефектов)',
+          receiptNum: 'ФНС #84912-НПД',
+          protocolAvailable: true
+        },
+        {
+          id: 102,
+          date: '23.10.2026, 14:30',
+          orderTitle: 'Комплектация стройматериалов со сканером ТСД',
+          orderId: 5,
+          workerName: 'Иван С.',
+          workerInn: '631204899211',
+          npdStatus: 'Самозанятый (НПД активен)',
+          amount: 3600,
+          fee: 0,
+          isB2B: true,
+          holdStatus: 'paid_sbp',
+          holdStatusText: 'Выплачено по СБП (Профи 4.8+)',
+          receiptNum: 'ФНС #84844-НПД',
+          protocolAvailable: true
+        },
+        {
+          id: 103,
+          date: '22.10.2026, 11:00',
+          orderTitle: 'Сортировка профилей и металлоконструкций на складе',
+          orderId: 8,
+          workerName: 'Максим Волков',
+          workerInn: '631892341209',
+          npdStatus: 'Самозанятый (НПД активен)',
+          amount: 3100,
+          fee: 0,
+          isB2B: true,
+          holdStatus: 'paid_sbp',
+          holdStatusText: 'Выплачено по СБП (Профи 4.8+)',
+          receiptNum: 'ФНС #84721-НПД',
+          protocolAvailable: true
+        },
+        {
+          id: 104,
+          date: '21.10.2026, 16:45',
+          orderTitle: 'Уборка складского бокса после инвентаризации',
+          orderId: 14,
+          workerName: 'Павел Н.',
+          workerInn: '631782341908',
+          npdStatus: 'Самозанятый (НПД активен)',
+          amount: 2800,
+          fee: 0,
+          isB2B: true,
+          holdStatus: 'refund_dispute',
+          holdStatusText: 'Возврат заказчику по спору (брак)',
+          receiptNum: 'Возврат буфера банка',
+          protocolAvailable: true
+        }
       ]
     };
   }

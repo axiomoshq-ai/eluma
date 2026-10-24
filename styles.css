@@ -11261,7 +11261,7 @@ select {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .btn-sos {
@@ -11342,7 +11342,7 @@ select {
 }
 
 /* 4. Адаптив под мобильные устройства */
-@media (max-width: 640px) {
+@media (max-width: 820px) {
   .shift-card,
   .employer-task-card {
     padding: 16px !important;
@@ -11389,4 +11389,798 @@ select {
   body, .main-content, .app-root {
     padding-bottom: 84px !important;
   }
+}
+
+
+/* ==========================================================================
+   26. 72-HOUR WARRANTY HOLD & SPLIT FINANCES SYSTEM (Arts. 779, 1253.1 CC RF)
+   ========================================================================== */
+
+.shift-card__warranty-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #B45309;
+}
+.shift-card__warranty-alert svg {
+  flex-shrink: 0;
+  stroke: #D97706;
+}
+
+[data-theme="dark"] .shift-card__warranty-alert {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FBBF24;
+}
+
+/* Stepper (Eluma Safe 6-step tracker) */
+.eluma-safe-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted, #9CA3AF);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stepper-step.done {
+  color: #059669;
+}
+
+.stepper-step.active {
+  color: var(--primary, #2563EB);
+  font-weight: 600;
+}
+
+.stepper-step .step-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-card-muted, #E5E7EB);
+  color: var(--text-muted, #6B7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.stepper-step.done .step-circle {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.stepper-step.active .step-circle {
+  background: var(--primary, #2563EB);
+  color: #FFFFFF;
+}
+
+.stepper-arrow {
+  color: var(--text-muted, #D1D5DB);
+  display: flex;
+  align-items: center;
+}
+
+/* Detail warranty hold banner & disputed banner */
+.emp-stepper-card {
+  margin-bottom: 16px;
+}
+
+.emp-warranty-hold-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.warranty-hold-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  color: #B45309;
+}
+
+.warranty-hold-banner-head .banner-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.warranty-hold-banner-head .timer-badge {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.warranty-hold-banner-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary, #4B5563);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.emp-disputed-banner {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.disputed-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #DC2626;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.disputed-banner-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary, #4B5563);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+/* Dispute Modal styling */
+.dispute-modal-dialog {
+  max-width: 520px;
+  width: 90%;
+  background: var(--bg-card, #FFFFFF);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.dispute-hold-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+
+.dispute-hold-alert svg {
+  stroke: #DC2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dispute-hold-alert strong {
+  display: block;
+  font-size: 13px;
+  color: #DC2626;
+  margin-bottom: 2px;
+}
+
+.dispute-hold-alert p {
+  font-size: 12px;
+  color: var(--text-secondary, #4B5563);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.dispute-reasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dispute-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.dispute-radio-label:hover {
+  background: var(--bg-card-subtle, #F9FAFB);
+  border-color: #D1D5DB;
+}
+
+.dispute-radio-label input[type="radio"] {
+  accent-color: #DC2626;
+}
+
+.dispute-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* B2B Tariff Modal styling */
+.b2b-tariff-dialog {
+  max-width: 540px;
+  width: 90%;
+  background: var(--bg-card, #FFFFFF);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.b2b-modal-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0 18px 0;
+}
+
+.b2b-modal-status-banner.active {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #047857;
+}
+
+.b2b-modal-status-banner.active svg {
+  stroke: #059669;
+}
+
+.b2b-modal-status-banner.inactive {
+  background: rgba(107, 114, 128, 0.08);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  color: #4B5563;
+}
+
+.status-banner-text strong {
+  display: block;
+  font-size: 13.5px;
+}
+
+.status-banner-text span {
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+
+.b2b-price-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.b2b-price-val {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  letter-spacing: -0.5px;
+}
+
+.b2b-price-period {
+  font-size: 14px;
+  color: var(--text-muted, #6B7280);
+}
+
+.b2b-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.b2b-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-secondary, #374151);
+}
+
+.b2b-feature-item svg {
+  stroke: #059669;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Finance & FNS screen (#scr-emp-balance) */
+.finance-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.finance-kpi-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.finance-kpi-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted, #6B7280);
+  margin-bottom: 8px;
+}
+
+.finance-kpi-amount {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.finance-kpi-sub {
+  font-size: 12px;
+  color: var(--text-secondary, #6B7280);
+  line-height: 1.35;
+}
+
+.finance-kpi-breakdown {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-light, #E5E7EB);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-subrow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-secondary, #4B5563);
+}
+
+.finance-split-table-wrap {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.finance-split-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.finance-split-table th {
+  background: var(--bg-card-subtle, #F9FAFB);
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--text-muted, #6B7280);
+  border-bottom: 1px solid var(--border-light, #E5E7EB);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.finance-split-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light, #E5E7EB);
+  vertical-align: middle;
+}
+
+.finance-cell-shift .sub-district,
+.finance-cell-worker .sub-inn {
+  font-size: 11px;
+  color: var(--text-muted, #6B7280);
+  margin-top: 2px;
+}
+
+.finance-split-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.finance-split-badge.hold {
+  background: rgba(245, 158, 11, 0.12);
+  color: #B45309;
+}
+
+.finance-split-badge.paid {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.finance-split-badge.refund {
+  background: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
+}
+
+.finance-split-badge.in-work {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1D4ED8;
+}
+
+.fns-check-link {
+  font-size: 11px;
+  color: var(--primary, #2563EB);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Worker Payout Level Widget */
+.worker-payout-level-widget {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.worker-payout-level-widget.on-payouts {
+  margin-top: 14px;
+  margin-bottom: 16px;
+}
+
+.payout-level-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.payout-level-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.payout-level-pill {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary, #2563EB);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.payout-level-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payout-level-metric {
+  font-size: 12px;
+  color: var(--text-secondary, #4B5563);
+}
+
+.payout-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-card-muted, #E5E7EB);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.payout-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563EB, #10B981);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.payout-level-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #6B7280);
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .finance-split-table-wrap {
+    overflow-x: auto;
+  }
+  .eluma-safe-stepper {
+    padding: 10px 12px;
+    gap: 4px;
+  }
+  .stepper-step {
+    font-size: 10.5px;
+  }
+  .stepper-step .step-circle {
+    width: 18px;
+    height: 18px;
+    font-size: 9.5px;
+  }
+}
+
+
+/* Helper & UI utility classes for complete DOM mapping */
+.b2b-modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.b2b-pill-badge {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary, #2563EB);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.b2b-status-banner {
+  margin: 12px 0 16px 0;
+}
+
+.b2b-tariff-modal-body {
+  padding-top: 4px;
+}
+
+.b2b-payoff-note {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.feature-icon-box {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feature-content {
+  flex: 1;
+}
+
+/* Classes for Dispute Modal */
+.dispute-modal-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dispute-modal-body {
+  padding-top: 4px;
+}
+
+.dispute-alert-badge {
+  background: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.hold-alert-icon {
+  flex-shrink: 0;
+}
+
+.hold-alert-text {
+  flex: 1;
+}
+
+.dispute-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Classes for Finance & Split Table */
+.finance-head-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary, #6B7280);
+}
+
+.finance-kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finance-kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-card-subtle, #F3F4F6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.finance-kpi-icon.bank svg {
+  stroke: #2563EB;
+}
+
+.finance-kpi-icon.shield svg {
+  stroke: #059669;
+}
+
+.finance-kpi-icon.doc svg {
+  stroke: #7C3AED;
+}
+
+.bank {}
+.shield {}
+.doc {}
+
+.finance-kpi-count {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.finance-kpi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.finance-kpi-desc {
+  font-size: 11.5px;
+  color: var(--text-muted, #6B7280);
+}
+
+.finance-kpi-action {
+  margin-top: 8px;
+}
+
+.breakdown-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563EB;
+}
+
+.finance-breakdown-sub {
+  font-size: 11.5px;
+  color: var(--text-muted, #6B7280);
+}
+
+.finance-transactions-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-light, #E5E7EB);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.finance-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.finance-table-head-row th {
+  padding: 12px 14px;
+}
+
+.finance-cell-date {
+  font-size: 12px;
+  color: var(--text-secondary, #4B5563);
+  white-space: nowrap;
+}
+
+.finance-cell-amount {
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+}
+
+.finance-cell-fee {
+  font-size: 12px;
+  color: var(--text-muted, #6B7280);
+  white-space: nowrap;
+}
+
+.finance-cell-total {
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+}
+
+.finance-cell-status {
+  white-space: nowrap;
+}
+
+.finance-cell-fns {
+  margin-top: 2px;
+}
+
+.csv-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Chat waiting & create form classes */
+.chat-waiting-state-body {
+  padding: 24px;
+}
+
+.waiting-card {
+  text-align: center;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.waiting-radar-pulse {
+  margin-bottom: 14px;
+}
+
+.only-pro-option-row {
+  margin-top: 6px;
+}
+
+.pro-filter-hint {
+  font-size: 11.5px;
+  color: #6B7280;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+.arrow-sep {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.success {}
+
+.text-center {
+  text-align: center;
 }
