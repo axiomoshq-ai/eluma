@@ -249,16 +249,6 @@
   border-color: var(--border-strong) !important;
 }
 
-[data-theme="dark"] .feed-filter-panel {
-  background: #181817 !important;
-  border-color: #2C2B28 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-}
-
-[data-theme="dark"] .filter-panel-divider {
-  background: #2C2B28 !important;
-}
-
 [data-theme="dark"] .search-input,
 [data-theme="dark"] .feed-search-box input,
 [data-theme="dark"] .geo-radar-bar,
@@ -414,28 +404,6 @@ button {
   background: var(--status-success-bg);
   color: var(--status-success);
   border: 1px solid var(--status-success-border);
-}
-
-/* Backward-compatible class aliases */
-.badge-mint {
-  background: var(--status-success-bg);
-  color: var(--status-success);
-  border: 1px solid var(--status-success-border);
-}
-.badge-gold {
-  background: var(--status-warning-bg);
-  color: var(--status-warning);
-  border: 1px solid var(--status-warning-border);
-}
-.badge-subtle {
-  background: var(--status-neutral-bg);
-  color: var(--status-neutral);
-  border: 1px solid var(--status-neutral-border);
-}
-.badge-danger-soft {
-  background: var(--status-danger-bg);
-  color: var(--status-danger);
-  border: 1px solid var(--status-danger-border);
 }
 
 /* Organization / B2B badge */
@@ -872,30 +840,6 @@ button {
   margin-bottom: 20px;
 }
 
-.feed-filter-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(20, 20, 19, 0.04), 0 4px 12px rgba(20, 20, 19, 0.02);
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filter-panel-divider {
-  height: 1px;
-  background: var(--border-light);
-  width: 100%;
-}
-
-.feed-search-and-radar-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 8px;
-  align-items: center;
-}
-
 .geo-radar-bar {
   height: 38px;
   padding: 0 6px 0 10px;
@@ -1019,131 +963,11 @@ button {
   box-shadow: 0 0 0 3px rgba(20, 20, 19, 0.06);
 }
 
-.feed-filters-secondary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.feed-filter-panel .search-input {
-  height: 38px;
-  border-radius: 9px;
-  padding: 0 12px 0 34px;
-  font-size: 13.5px;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-light);
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.feed-filter-panel .search-input:focus {
-  background: var(--bg-card);
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(20, 20, 19, 0.06);
-}
-
-.feed-filter-panel .search-icon {
-  left: 10px;
-}
-
-.feed-filter-panel .category-pills-row {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  align-items: center;
-  padding-bottom: 0;
-}
-
-.feed-filter-panel .category-pill,
-.feed-filter-panel .cat-chip,
-.feed-filter-panel .category-chip {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: 600;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
-  transition: all var(--ease-fast);
-  display: inline-flex;
-  align-items: center;
-}
-
-.feed-filter-panel .category-pill:hover,
-.feed-filter-panel .cat-chip:hover,
-.feed-filter-panel .category-chip:hover {
-  background: var(--bg-card-subtle);
-  color: var(--text-primary);
-  border-color: var(--border-light);
-}
-
-.feed-filter-panel .category-pill.active,
-.feed-filter-panel .cat-chip.active,
-.feed-filter-panel .category-chip.active {
-  background: var(--brand-primary) !important;
-  color: var(--brand-on-primary) !important;
-  border-color: var(--brand-primary) !important;
-  box-shadow: none !important;
-}
-
-.feed-filter-panel .filter-summary-line {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding-left: 8px;
-}
-
-.feed-filter-panel .filter-summary-line strong {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.feed-search-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
 .search-input-box,
 .feed-search-box {
   flex: 1;
   position: relative;
   width: 100%;
-}
-
-.search-kbd-hint {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg-card-subtle);
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-  transition: all var(--ease-fast);
-}
-
-.search-kbd-hint:hover {
-  color: var(--text-primary);
-  border-color: var(--border-strong);
 }
 
 .search-input,
@@ -3903,7 +3727,6 @@ textarea.form-control {
     overflow-x: auto !important;
   }
 }
-
 
 /* ==========================================================================
    17. SYNCHRONIZED DOM CLASSES & COMPONENTS (Eluma v17 Production)
@@ -7202,7 +7025,6 @@ textarea.form-control {
   font-weight: 600;
 }
 
-
 .filter-chips-wrap {
   display: flex;
   align-items: center;
@@ -8415,11 +8237,6 @@ textarea.form-control {
     min-height: 130px;
   }
 
-  .feed-search-and-radar-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
   .geo-radar-bar {
     width: 100%;
     justify-content: space-between;
@@ -8447,7 +8264,6 @@ textarea.form-control {
     max-width: none !important;
   }
 }
-
 
 /* ==========================================================================
    ELUMA v23 — 3-COLUMN MARKETPLACE LAYOUT & VERTICAL FILTER SIDEBAR
@@ -9004,7 +8820,6 @@ textarea.form-control {
   border-color: #F5F4F0;
   color: #141413;
 }
-
 
 /* --------------------------------------------------------------------------
    CUSTOM SLEEK SORT DROPDOWN (Replaces native OS select)
@@ -9792,47 +9607,6 @@ textarea.form-control {
   padding: 8px 14px;
   border-radius: var(--radius-md, 8px);
   white-space: nowrap;
-}
-
-/* Legacy/Fallback aliases */
-.friends-shift-photo {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-sm, 6px);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.friends-shift-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.friends-shift-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.friends-shift-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 3px;
-}
-
-.friends-shift-meta {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-
-.friends-shift-action {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
 }
 
 .empty-friends-shifts {

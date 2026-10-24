@@ -1,14 +1,17 @@
 {
-  "name": "olksi",
-  "version": "14.3.0",
-  "description": "olksi — Платформа разовых смен и бытовых поручений в Самаре",
+  "name": "eluma",
+  "version": "24.1.0",
+  "description": "Eluma — Платформа разовых смен и бытовых поручений в Самаре",
   "scripts": {
     "test": "node v14_static_audit.js && node v14_browser_test.js && node verify_map_fix.js && node tests/v24_multislot_friends_test.js && node tests/v24_mobile_test.js",
     "test:static": "node v14_static_audit.js",
     "test:browser": "node v14_browser_test.js",
     "test:map": "node verify_map_fix.js",
     "test:v24": "node tests/v24_multislot_friends_test.js",
-    "test:mobile": "node tests/v24_mobile_test.js"
+    "test:mobile": "node tests/v24_mobile_test.js",
+    "test:classes": "node tests/check_all_classes.js",
+    "test:audit": "node audit_all_views.js",
+    "test:v20": "node tests/v20_functional_test.js"
   },
   "devDependencies": {
     "playwright": "^1.64.1"
