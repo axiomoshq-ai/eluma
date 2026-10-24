@@ -322,9 +322,9 @@
 
     // Чип слотов смены
     const slotsBadgeHtml = totalSlots > 1 ? `
-      <span class="badge badge-slots" title="Слоты бригады">
+      <span class="badge badge-slots badge--slots" title="Слоты бригады">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span>${filledSlots} из ${totalSlots} чел.</span>
+        <span>Набрано: ${filledSlots} из ${totalSlots} чел.</span>
       </span>
     ` : '';
 
@@ -332,9 +332,9 @@
     const appsCount = (order.applications && order.applications.length) || 0;
     let summaryText = `Гео-радар 3 км активен · ${appsCount} откликов`;
     if (order.status === 'on_site') {
-      summaryText = 'GPS-контроль пройден · Исполнители на объекте';
+      summaryText = 'GPS подтверждён (45 м от точки) · Исполнители на объекте';
     } else if (order.status === 'in_review') {
-      summaryText = 'Фото ДО/ПОСЛЕ загружены · Ожидают проверки';
+      summaryText = 'Смена завершена · Фото ДО/ПОСЛЕ ожидают проверки';
     } else if (order.status === 'completed') {
       summaryText = 'Смена завершена · Расчет выплачен, чек сформирован';
     } else if (order.status === 'assigned') {
@@ -343,7 +343,7 @@
       summaryText = `Встречное предложение: ${order.counterOffer.price.toLocaleString('ru-RU')} ₽`;
     } else if (appsCount > 0) {
       const appsWord = appsCount === 1 ? 'отклик' : (appsCount >= 2 && appsCount <= 4 ? 'отклика' : 'откликов');
-      summaryText = `Гео-радар 3 км активен · ${appsCount} ${appsWord}`;
+      summaryText = `Гео-радар 3 км активен · ${appsCount} ${appsWord} (допуск сдан)`;
     } else {
       summaryText = 'Гео-радар 3 км активен · 0 откликов';
     }
@@ -351,11 +351,20 @@
     // Стоимость в безопасном холде Eluma Safe (учитывает статус B2B)
     const basePrice = order.rawPrice || 0;
     const holdAmount = empState.isB2BSubscribed ? basePrice : Math.round(basePrice * 1.07);
+    const holdFee = Math.round(basePrice * 0.07);
     const holdInfoText = empState.isB2BSubscribed
-      ? `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (0% сбор B2B)`
-      : `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (вкл. сбор 7%)`;
+      ? `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (0% сбор по подписке)`
+      : `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (вкл. сбор 7% — ${holdFee} ₽)`;
 
     // Определение контекстного действия
+    const sosLabel = empState.isB2BSubscribed ? 'СОС-вызов (бесплатно по B2B)' : 'СОС-вызов (+190 ₽)';
+    const sosBtnHtml = `
+      <button type="button" class="btn-sos btn-emp-primary-action sos" onclick="window.Eluma.Employer.enableSos(${order.id})">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>${sosLabel}</span>
+      </button>
+    `;
+
     let primaryActionBtnHtml = '';
     if (order.status === 'searching') {
       if (order.counterOffer) {
@@ -369,14 +378,10 @@
           <button type="button" class="btn-secondary-sm btn-emp-primary-action info" onclick="window.Eluma.Employer.openChatDialog(${order.id})">
             <span>Смотреть отклики (${appsCount})</span>
           </button>
+          ${!order.isSos ? sosBtnHtml : ''}
         `;
       } else {
-        primaryActionBtnHtml = `
-          <button type="button" class="btn-sos btn-emp-primary-action sos" onclick="window.Eluma.Employer.enableSos(${order.id})">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>СОС-вызов (+190 ₽)</span>
-          </button>
-        `;
+        primaryActionBtnHtml = sosBtnHtml;
       }
     } else if (order.status === 'in_review') {
       primaryActionBtnHtml = `
@@ -387,7 +392,7 @@
     } else if (order.status === 'assigned' || order.status === 'on_site') {
       primaryActionBtnHtml = `
         <button type="button" class="btn-secondary-sm btn-emp-primary-action control" onclick="window.Eluma.Employer.openDetail(${order.id})">
-          <span>Контроль смены</span>
+          <span>Открыть трекер смены</span>
         </button>
       `;
     } else if (order.status === 'completed') {
@@ -399,7 +404,7 @@
     } else {
       primaryActionBtnHtml = `
         <button type="button" class="btn-secondary-sm btn-emp-primary-action" onclick="window.Eluma.Employer.openDetail(${order.id})">
-          <span>Подробнее</span>
+          <span>Памятка и детали</span>
         </button>
       `;
     }
