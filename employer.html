@@ -611,6 +611,96 @@
           </div>
         </section>
 
+        <!-- 5. ЭКРАН: МОИ ОБЪЕКТЫ / ПАМЯТКИ (MEMOS & SITES) -->
+        <section class="screen" id="scr-emp-memos">
+          <div class="memos-screen-wrap">
+
+            <!-- Заголовок и панель действий -->
+            <div class="memos-top-bar">
+              <div class="memos-top-titles">
+                <h2 class="memos-page-title">Мои объекты и памятки допуска</h2>
+                <p class="memos-page-subtitle">Реестр производственно-складских объектов в Самаре, GPS-контроль геозон 150 м и инструкции для самозанятых исполнителей</p>
+              </div>
+              <div class="memos-top-actions">
+                <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.Employer.openAddBriefingModal()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                  <span>+ Инструктаж</span>
+                </button>
+                <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.openAddSiteModal()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>+ Добавить объект</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- KPI-полоса объектов -->
+            <div class="memos-kpi-grid">
+              <div class="memos-kpi-card">
+                <span class="memos-kpi-label">Активные объекты</span>
+                <strong class="memos-kpi-value" id="empSitesCountKpi">3 объекта</strong>
+                <span class="memos-kpi-sub">В Самаре и пригороде</span>
+              </div>
+              <div class="memos-kpi-card">
+                <span class="memos-kpi-label">GPS-контроль геозон</span>
+                <strong class="memos-kpi-value">150 метров</strong>
+                <span class="memos-kpi-sub">Защита от ложных выходов</span>
+              </div>
+              <div class="memos-kpi-card">
+                <span class="memos-kpi-label">Памятки для новичков</span>
+                <strong class="memos-kpi-value">100% заполнено</strong>
+                <span class="memos-kpi-sub">КПП, рохли, пропускной режим</span>
+              </div>
+              <div class="memos-kpi-card">
+                <span class="memos-kpi-label">Стандарт безопасности</span>
+                <strong class="memos-kpi-value">ГОСТ 12.0.004-2015</strong>
+                <span class="memos-kpi-sub" id="empBriefingCountKpi">2 записи в журнале</span>
+              </div>
+            </div>
+
+            <!-- Список объектов и памяток -->
+            <div class="memos-section-block">
+              <div class="memos-section-header">
+                <h3 class="memos-section-title">Производственные и логистические объекты</h3>
+                <span class="memos-section-tag">GPS Чек-ин активирует памятку</span>
+              </div>
+              <div class="sites-cards-grid" id="empSitesCardsList">
+                <!-- Заполняется динамически через JS -->
+              </div>
+            </div>
+
+            <!-- Журнал инструктажей по охране труда -->
+            <div class="memos-section-block">
+              <div class="memos-section-header">
+                <div>
+                  <h3 class="memos-section-title">Журнал вводных инструктажей по охране труда</h3>
+                  <p class="memos-section-desc">Электронная ведомость инструктажей перед допуском на объекты (ГОСТ 12.0.004-2015, ст. 214 ТК РФ)</p>
+                </div>
+                <button type="button" class="btn btn-secondary-outline btn-sm" onclick="window.Eluma.Employer.exportBriefingJournal()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Экспорт журнала</span>
+                </button>
+              </div>
+              <div class="briefing-journal-wrap">
+                <table class="briefing-journal-table" id="empBriefingJournalTable">
+                  <thead>
+                    <tr>
+                      <th>Дата</th>
+                      <th>Объект / Площадка</th>
+                      <th>Ответственный специалист по ОТ</th>
+                      <th>Тематика инструктажа</th>
+                      <th>Статус допуска</th>
+                    </tr>
+                  </thead>
+                  <tbody id="empBriefingJournalBody">
+                    <!-- Заполняется динамически через JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         <!-- 6. ЭКРАН: ПРОФИЛЬ КОМПАНИИ (PROFILE & ПАМЯТКИ) -->
         <section class="screen" id="scr-emp-profile">
           <div class="profile-screen-wrap">
@@ -687,6 +777,98 @@
         <div class="modal-actions-grid">
           <button type="submit" class="btn btn-primary-cta">Сохранить памятку</button>
           <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.UI.closeModal('editMemoModal')">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Модалка: Добавление нового объекта -->
+  <div class="modal-backdrop" id="addSiteModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog add-site-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Новый объект в Самаре</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.Employer.closeAddSiteModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form onsubmit="window.Eluma.Employer.saveNewSite(event)">
+        <p class="modal-sub-label">Объект получит радиус геозоны 150 метров и памятку для допуска исполнителей:</p>
+        <div class="form-group">
+          <label class="form-label" for="newSiteNameInput">Название объекта:</label>
+          <input type="text" id="newSiteNameInput" class="form-input" placeholder="Например: Складской комплекс «Южный»" required>
+        </div>
+        <div class="form-grid-2col">
+          <div class="form-group">
+            <label class="form-label" for="newSiteDistrictSelect">Район Самары:</label>
+            <select id="newSiteDistrictSelect" class="form-select">
+              <option value="Кировский р-н">Кировский район</option>
+              <option value="Промышленный р-н">Промышленный район</option>
+              <option value="Советский р-н">Советский район</option>
+              <option value="Октябрьский р-н">Октябрьский район</option>
+              <option value="Ленинский р-н">Ленинский район</option>
+              <option value="Самарский р-н">Самарский район</option>
+              <option value="Железнодорожный р-н">Железнодорожный район</option>
+              <option value="Красноглинский р-н">Красноглинский район</option>
+              <option value="Куйбышевский р-н">Куйбышевский район</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newSiteTypeInput">Тип площадки:</label>
+            <input type="text" id="newSiteTypeInput" class="form-input" placeholder="Складской терминал / Магазин" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newSiteAddressInput">Точный адрес в Самаре:</label>
+          <input type="text" id="newSiteAddressInput" class="form-input" placeholder="г. Самара, Заводское шоссе, 18" required>
+        </div>
+        <div class="form-grid-2col">
+          <div class="form-group">
+            <label class="form-label" for="newSiteOfficerInput">Ответственный по ОТ / бригадир:</label>
+            <input type="text" id="newSiteOfficerInput" class="form-input" placeholder="ФИО ответственного" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newSitePhoneInput">Телефон ответственного:</label>
+            <input type="text" id="newSitePhoneInput" class="form-input" placeholder="+7 (927) 000-00-00" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newSiteMemoInput">Памятка для исполнителя (выдаётся при GPS чек-ине 150м):</label>
+          <textarea id="newSiteMemoInput" class="form-textarea" rows="3" placeholder="Пропуск на КПП, спецодежда, инструкции новичкам..." required></textarea>
+        </div>
+        <div class="modal-actions-grid">
+          <button type="submit" class="btn btn-primary-cta">Сохранить объект</button>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.Employer.closeAddSiteModal()">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Модалка: Внести запись в журнал инструктажей -->
+  <div class="modal-backdrop" id="addBriefingModal" onclick="window.Eluma.UI.handleBackdropClick(event)">
+    <div class="modal-sheet-dialog add-briefing-dialog">
+      <div class="modal-header-line">
+        <h3 class="modal-main-title">Внести запись в журнал инструктажей</h3>
+        <button class="modal-close-ico" onclick="window.Eluma.Employer.closeAddBriefingModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form onsubmit="window.Eluma.Employer.saveNewBriefing(event)">
+        <p class="modal-sub-label">Фиксация вводного инструктажа по охране труда по ГОСТ 12.0.004-2015:</p>
+        <div class="form-group">
+          <label class="form-label" for="briefingSiteSelect">Объект проведения:</label>
+          <select id="briefingSiteSelect" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="briefingOfficerInput">Ответственный специалист по ОТ:</label>
+          <input type="text" id="briefingOfficerInput" class="form-input" value="Иванов С.П. (Инженер по ОТ)" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="briefingTopicInput">Тематика инструктажа:</label>
+          <input type="text" id="briefingTopicInput" class="form-input" value="Вводный инструктаж по охране труда (ГОСТ 12.0.004-2015)" required>
+        </div>
+        <div class="modal-actions-grid">
+          <button type="submit" class="btn btn-primary-cta">Зафиксировать допуск</button>
+          <button type="button" class="btn btn-secondary-outline" onclick="window.Eluma.Employer.closeAddBriefingModal()">Отмена</button>
         </div>
       </form>
     </div>

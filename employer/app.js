@@ -46,15 +46,6 @@
   // --------------------------------------------------------------------------
 
   function showScreen(screenId) {
-    if (screenId === 'memos') {
-      showScreen('profile');
-      setTimeout(() => {
-        const memosEl = document.getElementById('empMemosSection');
-        if (memosEl) memosEl.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-      return;
-    }
-
     empState.currentScreen = screenId;
     store.setTabScreen('employer', screenId);
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -73,6 +64,7 @@
       create: 'Создать смену',
       chats: 'Отклики и допуск',
       balance: 'Финансы и чеки ФНС',
+      memos: 'Мои объекты / Памятки',
       profile: 'Профиль компании',
       detail: 'Детали смены'
     };
@@ -80,6 +72,8 @@
     if (titleEl) titleEl.textContent = titles[screenId] || 'Кабинет заказчика';
 
     window.scrollTo({ top: 0, behavior: 'instant' });
+    const mainWrap = document.querySelector('.main-content');
+    if (mainWrap) mainWrap.scrollTop = 0;
     renderCurrentScreen();
   }
 
@@ -96,6 +90,9 @@
         break;
       case 'balance':
         renderEmployerBalance();
+        break;
+      case 'memos':
+        renderEmployerMemos();
         break;
       case 'profile':
         renderEmployerProfile();
@@ -849,6 +846,7 @@
 
   function openEditMemoModal(orderId) {
     empState.editingMemoOrderId = orderId;
+    empState.editingMemoSiteId = null;
     const order = (store.state.orders || []).find(o => o.id === orderId);
     const input = document.getElementById('editMemoTextInput');
     if (input) {
@@ -857,10 +855,33 @@
     UI.openModal('editMemoModal');
   }
 
+  function openEditSiteMemoModal(siteId) {
+    empState.editingMemoSiteId = siteId;
+    empState.editingMemoOrderId = null;
+    const sites = store.getEmployerSites ? store.getEmployerSites(store.state.currentEmployerId) : [];
+    const site = sites.find(s => s.id === siteId);
+    const input = document.getElementById('editMemoTextInput');
+    if (input) {
+      input.value = (site && site.memo) ? site.memo : '';
+    }
+    UI.openModal('editMemoModal');
+  }
+
   function saveObjectMemo(e) {
     if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('editMemoTextInput');
     const memoText = input ? input.value.trim() : '';
+
+    if (empState.editingMemoSiteId) {
+      if (store.updateEmployerSiteMemo) {
+        store.updateEmployerSiteMemo(store.state.currentEmployerId, empState.editingMemoSiteId, memoText);
+      }
+      UI.closeModal('editMemoModal');
+      UI.showFeedbackToast('Памятка обновлена', 'Исполнитель увидит обновленный текст после GPS чек-ина 150 м');
+      renderEmployerMemos();
+      return;
+    }
+
     const order = (store.state.orders || []).find(o => o.id === empState.editingMemoOrderId);
     if (order) {
       order.objectMemo = memoText;
@@ -870,6 +891,224 @@
       const disp = document.getElementById('memoTextDisplay_' + order.id);
       if (disp) disp.textContent = memoText;
     }
+  }
+
+  function renderEmployerMemos() {
+    const sites = store.getEmployerSites ? store.getEmployerSites(store.state.currentEmployerId) : [];
+    const prof = store.getCurrentEmployerProfile();
+    const briefings = (prof && prof.safetyBriefingLog) || [];
+
+    const kpiSitesEl = document.getElementById('empSitesCountKpi');
+    if (kpiSitesEl) {
+      kpiSitesEl.textContent = `${sites.length} объекта`;
+    }
+
+    const kpiBriefingEl = document.getElementById('empBriefingCountKpi');
+    if (kpiBriefingEl) {
+      kpiBriefingEl.textContent = `${briefings.length} записи в журнале`;
+    }
+
+    const listEl = document.getElementById('empSitesCardsList');
+    if (listEl) {
+      if (sites.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-feed-card">
+            <p>У вас пока нет добавленных объектов в Самаре</p>
+            <button type="button" class="btn btn-primary-cta" onclick="window.Eluma.Employer.openAddSiteModal()">+ Добавить первый объект</button>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = sites.map(site => `
+          <div class="site-card">
+            <div class="site-card__header">
+              <div class="site-card__title-wrap">
+                <div class="site-card__type-badge">${UI.escapeHtml(site.type || 'Склад / Объект')}</div>
+                <h4 class="site-card__title">${UI.escapeHtml(site.name)}</h4>
+                <div class="site-card__location">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>${UI.escapeHtml(site.address)} (${UI.escapeHtml(site.district)})</span>
+                </div>
+              </div>
+              <div class="site-card__status-col">
+                <span class="site-badge-geozone">Геозона 150м активна</span>
+                <span class="site-coords-pill">GPS: ${UI.escapeHtml(site.coords || '53.2000, 50.1500')}</span>
+              </div>
+            </div>
+
+            <div class="site-card__body">
+              <div class="site-card__officer-row">
+                <div class="officer-info">
+                  <span class="officer-label">Ответственный по ОТ / бригадир:</span>
+                  <strong class="officer-name">${UI.escapeHtml(site.officer)}</strong>
+                </div>
+                <div class="officer-phone">${UI.escapeHtml(site.phone)}</div>
+              </div>
+
+              <div class="site-card__memo-box">
+                <div class="site-card__memo-header">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <strong>Памятка для исполнителя (выдаётся при GPS чек-ине 150 м):</strong>
+                </div>
+                <p class="site-card__memo-text">${UI.escapeHtml(site.memo || 'Памятка не заполнена')}</p>
+              </div>
+            </div>
+
+            <div class="site-card__actions">
+              <button type="button" class="btn btn-secondary-outline btn-sm" onclick="window.Eluma.Employer.openEditSiteMemoModal('${site.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Редактировать памятку</span>
+              </button>
+              <button type="button" class="btn btn-primary-cta btn-sm" onclick="window.Eluma.Employer.createShiftForSite('${site.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Создать смену на объекте</span>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    const tableBody = document.getElementById('empBriefingJournalBody');
+    if (tableBody) {
+      if (briefings.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 24px; color: #6B7280;">Отметок об инструктажах пока нет</td></tr>`;
+      } else {
+        tableBody.innerHTML = briefings.map(b => `
+          <tr>
+            <td class="briefing-cell-date">${UI.escapeHtml(b.date)}</td>
+            <td class="briefing-cell-site"><strong>${UI.escapeHtml(b.site)}</strong></td>
+            <td class="briefing-cell-officer">${UI.escapeHtml(b.officer)}</td>
+            <td class="briefing-cell-topic">Вводный инструктаж по охране труда (ГОСТ 12.0.004-2015)</td>
+            <td class="briefing-cell-status"><span class="badge-briefing-verified">Пройден и зафиксирован</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    renderEmployerProfile();
+  }
+
+  function openAddSiteModal() {
+    UI.openModal('addSiteModal');
+  }
+
+  function closeAddSiteModal() {
+    UI.closeModal('addSiteModal');
+  }
+
+  function saveNewSite(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const name = (document.getElementById('newSiteNameInput')?.value || '').trim();
+    const district = document.getElementById('newSiteDistrictSelect')?.value || 'Кировский р-н';
+    const type = (document.getElementById('newSiteTypeInput')?.value || '').trim();
+    const address = (document.getElementById('newSiteAddressInput')?.value || '').trim();
+    const officer = (document.getElementById('newSiteOfficerInput')?.value || '').trim();
+    const phone = (document.getElementById('newSitePhoneInput')?.value || '').trim();
+    const memo = (document.getElementById('newSiteMemoInput')?.value || '').trim();
+
+    if (!name || !address) {
+      UI.showFeedbackToast('Ошибка', 'Укажите название и адрес объекта');
+      return;
+    }
+
+    if (store.saveEmployerSite) {
+      store.saveEmployerSite(store.state.currentEmployerId, {
+        name,
+        district,
+        type,
+        address,
+        officer,
+        phone,
+        memo,
+        coords: '53.2150, 50.1800'
+      });
+    }
+
+    closeAddSiteModal();
+    UI.showFeedbackToast('Объект добавлен', `Объект «${name}» успешно внесен в реестр Eluma Safe`);
+    renderEmployerMemos();
+  }
+
+  function createShiftForSite(siteId) {
+    const sites = store.getEmployerSites ? store.getEmployerSites(store.state.currentEmployerId) : [];
+    const site = sites.find(s => s.id === siteId);
+    showScreen('create');
+
+    if (site) {
+      const distSelect = document.getElementById('taskDistrictSelect');
+      if (distSelect && site.district) {
+        distSelect.value = site.district;
+      }
+      const addrInput = document.getElementById('taskAddressInput');
+      if (addrInput && site.address) {
+        addrInput.value = site.address;
+      }
+      const memoInput = document.getElementById('taskMemoInput');
+      if (memoInput && site.memo) {
+        memoInput.value = site.memo;
+      }
+      UI.showFeedbackToast('Объект выбран', `Подставлены адрес и памятка: ${site.name}`);
+    }
+  }
+
+  function openAddBriefingModal() {
+    const siteSelect = document.getElementById('briefingSiteSelect');
+    if (siteSelect) {
+      const sites = store.getEmployerSites ? store.getEmployerSites(store.state.currentEmployerId) : [];
+      siteSelect.innerHTML = sites.map(s => `<option value="${UI.escapeHtml(s.name)}">${UI.escapeHtml(s.name)} (${UI.escapeHtml(s.address)})</option>`).join('');
+    }
+    UI.openModal('addBriefingModal');
+  }
+
+  function closeAddBriefingModal() {
+    UI.closeModal('addBriefingModal');
+  }
+
+  function saveNewBriefing(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const site = document.getElementById('briefingSiteSelect')?.value || 'Складской комплекс';
+    const officer = (document.getElementById('briefingOfficerInput')?.value || 'Инженер по ОТ').trim();
+
+    if (store.addEmployerSafetyBriefing) {
+      store.addEmployerSafetyBriefing(store.state.currentEmployerId, {
+        date: new Date().toLocaleDateString('ru-RU'),
+        officer,
+        site
+      });
+    }
+
+    closeAddBriefingModal();
+    UI.showFeedbackToast('Инструктаж зафиксирован', 'Запись добавлена в электронный журнал (ГОСТ 12.0.004-2015)');
+    renderEmployerMemos();
+  }
+
+  function exportBriefingJournal() {
+    const prof = store.getCurrentEmployerProfile();
+    const logs = (prof && prof.safetyBriefingLog) || [];
+    const rows = [
+      ['Дата и время', 'Объект / Площадка', 'Ответственный инженер по ОТ', 'Стандарт и тематика', 'Статус допуска']
+    ];
+    logs.forEach(l => {
+      rows.push([
+        l.date || '',
+        l.site || '',
+        l.officer || '',
+        'Вводный инструктаж по охране труда (ГОСТ 12.0.004-2015, ст. 214 ТК РФ)',
+        'Пройден и зафиксирован'
+      ]);
+    });
+
+    const csvContent = '\uFEFF' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eluma_safety_briefings_journal_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    UI.showFeedbackToast('Журнал выгружен', 'Электронная ведомость инструктажей сохранена в CSV');
   }
 
   // --------------------------------------------------------------------------
@@ -1919,7 +2158,17 @@
     handleSendChat: handleSendChat,
     sendQuickChat: sendQuickChat,
     openEditMemoModal: openEditMemoModal,
+    openEditSiteMemoModal: openEditSiteMemoModal,
     saveObjectMemo: saveObjectMemo,
+    renderEmployerMemos: renderEmployerMemos,
+    openAddSiteModal: openAddSiteModal,
+    closeAddSiteModal: closeAddSiteModal,
+    saveNewSite: saveNewSite,
+    createShiftForSite: createShiftForSite,
+    openAddBriefingModal: openAddBriefingModal,
+    closeAddBriefingModal: closeAddBriefingModal,
+    saveNewBriefing: saveNewBriefing,
+    exportBriefingJournal: exportBriefingJournal,
     enableSos: enableSos,
     toggleCardMenu: toggleCardMenu,
     toggleB2BSubscription: toggleB2BSubscription,

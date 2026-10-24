@@ -95,6 +95,7 @@ const fs = require('fs');
     { name: 'Детали заказа #1', id: 'detail', action: () => window.Olksi.Employer.openDetail(1) },
     { name: 'Чаты', id: 'chats', action: () => window.Olksi.Employer.navigate('chats') },
     { name: 'Эскроу и баланс', id: 'balance', action: () => window.Olksi.Employer.navigate('balance') },
+    { name: 'Мои объекты / Памятки', id: 'memos', action: () => window.Olksi.Employer.navigate('memos') },
     { name: 'Профиль компании', id: 'profile', action: () => window.Olksi.Employer.navigate('profile') }
   ];
 

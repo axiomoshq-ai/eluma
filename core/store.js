@@ -1186,6 +1186,63 @@
       return this.state.employerTransactions || [];
     }
 
+    // Реестр объектов и памяток заказчика
+    getEmployerSites(ownerId = 101) {
+      const eid = ownerId || this.state.currentEmployerId || 101;
+      const prof = this.state.employerProfiles && this.state.employerProfiles[eid];
+      if (prof && prof.sites) return prof.sites;
+      return [];
+    }
+
+    saveEmployerSite(ownerId, siteData) {
+      const eid = ownerId || this.state.currentEmployerId || 101;
+      const prof = this.state.employerProfiles && this.state.employerProfiles[eid];
+      if (!prof) return null;
+      if (!prof.sites) prof.sites = [];
+      const newSite = {
+        id: 'site-' + Date.now(),
+        name: siteData.name || 'Новый объект',
+        address: siteData.address || 'Самара',
+        district: siteData.district || 'Самара',
+        type: siteData.type || 'Склад / Объект',
+        coords: siteData.coords || '53.2000, 50.1500',
+        officer: siteData.officer || 'Ответственный по ОТ',
+        phone: siteData.phone || '+7 (927) 000-00-00',
+        memo: siteData.memo || 'Вход через проходную базы по паспорту.',
+        activeShiftsCount: 0
+      };
+      prof.sites.push(newSite);
+      this.save('site_added');
+      return newSite;
+    }
+
+    updateEmployerSiteMemo(ownerId, siteId, memoText) {
+      const eid = ownerId || this.state.currentEmployerId || 101;
+      const prof = this.state.employerProfiles && this.state.employerProfiles[eid];
+      if (!prof || !prof.sites) return false;
+      const s = prof.sites.find(item => item.id === siteId);
+      if (s) {
+        s.memo = memoText;
+        this.save('site_memo_updated');
+        return true;
+      }
+      return false;
+    }
+
+    addEmployerSafetyBriefing(ownerId, logData) {
+      const eid = ownerId || this.state.currentEmployerId || 101;
+      const prof = this.state.employerProfiles && this.state.employerProfiles[eid];
+      if (!prof) return false;
+      if (!prof.safetyBriefingLog) prof.safetyBriefingLog = [];
+      prof.safetyBriefingLog.unshift({
+        date: logData.date || new Date().toLocaleDateString('ru-RU'),
+        officer: logData.officer || 'Инженер по ОТ',
+        site: logData.site || 'Объект Самара'
+      });
+      this.save('briefing_added');
+      return true;
+    }
+
     // Формирование заверенного цифрового протокола сделки (ст. 779, 1253.1 ГК РФ)
     getDigitalProtocol(orderId) {
       const order = (this.state.orders || []).find(o => o.id === orderId);
