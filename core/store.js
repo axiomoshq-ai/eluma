@@ -546,6 +546,21 @@
       return { status: 'passed', label: 'Пройден', isPassed: true, isExpiring: false, bestScore: progress.bestScore, validUntil: progress.validUntil };
     }
 
+    getWorkerPassedCourses(workerId = null) {
+      const wid = this.resolveWorkerId(workerId);
+      const Courses = (window.Eluma && window.Eluma.Courses) || (window.Olksi && window.Olksi.Courses);
+      const all = Courses && Courses.getAllCourses ? Courses.getAllCourses() : [];
+      const user = this.getUser(wid);
+      const userDopuski = (user && user.allowedCategories) || [];
+
+      return all.filter(c => {
+        const st = this.getCourseStatus(wid, c.id);
+        if (st && st.isPassed) return true;
+        if (userDopuski.includes(c.id) || userDopuski.includes(c.category)) return true;
+        return false;
+      });
+    }
+
     // Допущен ли исполнитель к смене
     canWorkerTakeOrder(workerId = null, order) {
       const wid = this.resolveWorkerId(workerId);

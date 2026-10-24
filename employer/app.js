@@ -22,6 +22,7 @@
     currentScreen: 'home', // home, create, chats, balance, profile, detail
     statusFilter: 'all', // all, searching, assigned, in_review, completed
     searchQuery: '',
+    isB2BSubscribed: true,
     currentDetailOrderId: null,
     editingOrderId: null,
     activeChatOrderId: null,
@@ -227,30 +228,38 @@
     const attentionCountEl = document.getElementById('kpiAttentionCount');
     const attentionDescEl = document.getElementById('kpiAttentionDesc');
     const tariffStatusEl = document.getElementById('kpiTariffStatus');
+    const sidebarHoldEl = document.getElementById('sidebarEscrowReserved');
 
-    // Активные смены в холде
+    // Активные смены в холде: динамический расчет с учетом статуса B2B
     const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
-    let totalHold = 0;
-    activeOrders.forEach(o => {
-      totalHold += o.totalEscrow || (o.rawPrice + Math.round(o.rawPrice * 0.07));
-    });
+    const totalHold = activeOrders.reduce((sum, o) => {
+      const base = o.rawPrice || 0;
+      return sum + (empState.isB2BSubscribed ? base : Math.round(base * 1.07));
+    }, 0);
 
-    if (holdAmountEl) holdAmountEl.textContent = `${totalHold.toLocaleString('ru-RU')} ₽`;
+    const formattedHold = `${totalHold.toLocaleString('ru-RU')} ₽`;
+    if (holdAmountEl) holdAmountEl.textContent = formattedHold;
+    if (sidebarHoldEl) sidebarHoldEl.textContent = formattedHold;
     if (holdShiftsEl) holdShiftsEl.textContent = `${activeOrders.length} активных смен`;
 
-    // Смены, требующие внимания заказчика
-    const attentionOrders = orders.filter(o =>
-      o.status === 'in_review' ||
-      (o.counterOffer && (o.status === 'applied' || o.status === 'searching')) ||
-      (o.applications && o.applications.length > 0 && o.status === 'searching')
+    // Смены, требующие внимания заказчика: на проверке + новые отклики
+    const reviewOrders = orders.filter(o => o.status === 'in_review');
+    const appsOrders = orders.filter(o =>
+      (o.status === 'searching' && o.applications && o.applications.length > 0) ||
+      (o.counterOffer && (o.status === 'applied' || o.status === 'searching'))
     );
-    const attentionCount = attentionOrders.length;
+    const attentionCount = reviewOrders.length + appsOrders.length;
 
     if (attentionCountEl) attentionCountEl.textContent = `${attentionCount} смен`;
     if (attentionDescEl) {
-      attentionDescEl.textContent = attentionCount > 0
-        ? `${attentionCount} ждут ответа или приёмки фото`
-        : 'Все смены под контролем';
+      if (attentionCount > 0) {
+        const parts = [];
+        if (reviewOrders.length > 0) parts.push(`${reviewOrders.length} на проверке`);
+        if (appsOrders.length > 0) parts.push(`${appsOrders.length} новых откликов`);
+        attentionDescEl.textContent = parts.join(', ');
+      } else {
+        attentionDescEl.textContent = 'Все смены под контролем';
+      }
     }
 
     // Бейджи чатов
@@ -265,13 +274,23 @@
       chatsBadgeMobile.style.display = attentionCount > 0 ? 'inline-block' : 'none';
     }
 
-    // Статус тарифа
-    const prof = store.getCurrentEmployerProfile();
-    if (tariffStatusEl && prof) {
-      tariffStatusEl.textContent = prof.type === 'business'
+    // Статус тарифа в KPI 3
+    if (tariffStatusEl) {
+      tariffStatusEl.textContent = empState.isB2BSubscribed
         ? 'B2B: 790 ₽/мес — 0% сбор'
         : 'Тариф Базовый — 7% сбор';
     }
+  }
+
+  function toggleB2BSubscription() {
+    empState.isB2BSubscribed = !empState.isB2BSubscribed;
+    const msg = empState.isB2BSubscribed
+      ? 'B2B-подписка активирована: 0% сбор платформы'
+      : 'Включен Базовый тариф: 7% сбор платформы';
+    if (UI && UI.showToast) {
+      UI.showToast(msg, 'info');
+    }
+    renderEmployerOrders();
   }
 
   function setStatusFilter(status) {
@@ -303,132 +322,147 @@
 
     // Чип слотов смены
     const slotsBadgeHtml = totalSlots > 1 ? `
-      <span class="emp-chip emp-chip-slots" title="Слоты бригады">
+      <span class="badge badge-slots" title="Слоты бригады">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span>${filledSlots} из ${totalSlots} чел.</span>
       </span>
     ` : '';
 
-    // Сводка радара и откликов
+    // Сводка радара и статуса
     const appsCount = (order.applications && order.applications.length) || 0;
     let summaryText = `Гео-радар 3 км активен · ${appsCount} откликов`;
-    if (order.assignedWorkerId) {
-      const worker = store.getUser(order.assignedWorkerId);
-      summaryText = `Исполнитель: ${worker ? worker.name : 'Назначен'} (Рейтинг ${worker ? worker.rating : '4.95'})`;
+    if (order.status === 'on_site') {
+      summaryText = 'GPS-контроль пройден · Исполнители на объекте';
+    } else if (order.status === 'in_review') {
+      summaryText = 'Фото ДО/ПОСЛЕ загружены · Ожидают проверки';
+    } else if (order.status === 'completed') {
+      summaryText = 'Смена завершена · Расчет выплачен, чек сформирован';
+    } else if (order.status === 'assigned') {
+      summaryText = 'Исполнитель назначен · Ожидание выхода на смену';
     } else if (order.counterOffer) {
       summaryText = `Встречное предложение: ${order.counterOffer.price.toLocaleString('ru-RU')} ₽`;
     } else if (appsCount > 0) {
-      summaryText = `Получено ${appsCount} откликов исполнителей`;
+      const appsWord = appsCount === 1 ? 'отклик' : (appsCount >= 2 && appsCount <= 4 ? 'отклика' : 'откликов');
+      summaryText = `Гео-радар 3 км активен · ${appsCount} ${appsWord}`;
+    } else {
+      summaryText = 'Гео-радар 3 км активен · 0 откликов';
     }
 
-    // Стоимость в холде
-    const totalEscrowNum = order.totalEscrow || (order.rawPrice + Math.round(order.rawPrice * 0.07));
-    const totalEscrowFormatted = totalEscrowNum.toLocaleString('ru-RU');
+    // Стоимость в безопасном холде Eluma Safe (учитывает статус B2B)
+    const basePrice = order.rawPrice || 0;
+    const holdAmount = empState.isB2BSubscribed ? basePrice : Math.round(basePrice * 1.07);
+    const holdInfoText = empState.isB2BSubscribed
+      ? `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (0% сбор B2B)`
+      : `В холде: ${holdAmount.toLocaleString('ru-RU')} ₽ (вкл. сбор 7%)`;
 
-    // Определение единственного главного контекстного действия
+    // Определение контекстного действия
     let primaryActionBtnHtml = '';
     if (order.status === 'searching') {
       if (order.counterOffer) {
         primaryActionBtnHtml = `
-          <button type="button" class="btn-emp-primary-action warning" onclick="window.Eluma.Employer.openDetail(${order.id})">
+          <button type="button" class="btn-secondary-sm btn-emp-primary-action warning" onclick="window.Eluma.Employer.openDetail(${order.id})">
             <span>Рассмотреть ставку (${order.counterOffer.price.toLocaleString('ru-RU')} ₽)</span>
           </button>
         `;
       } else if (appsCount > 0) {
         primaryActionBtnHtml = `
-          <button type="button" class="btn-emp-primary-action info" onclick="window.Eluma.Employer.openChatDialog(${order.id})">
+          <button type="button" class="btn-secondary-sm btn-emp-primary-action info" onclick="window.Eluma.Employer.openChatDialog(${order.id})">
             <span>Смотреть отклики (${appsCount})</span>
           </button>
         `;
       } else {
         primaryActionBtnHtml = `
-          <button type="button" class="btn-emp-primary-action sos" onclick="window.Eluma.Employer.enableSos(${order.id})">
+          <button type="button" class="btn-sos btn-emp-primary-action sos" onclick="window.Eluma.Employer.enableSos(${order.id})">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>СОС-вызов (190 ₽)</span>
+            <span>СОС-вызов (+190 ₽)</span>
           </button>
         `;
       }
     } else if (order.status === 'in_review') {
       primaryActionBtnHtml = `
-        <button type="button" class="btn-emp-primary-action review" onclick="window.Eluma.Employer.openDetail(${order.id})">
+        <button type="button" class="btn-secondary-sm btn-emp-primary-action review" onclick="window.Eluma.Employer.openDetail(${order.id})">
           <span>Проверить фото ДО/ПОСЛЕ</span>
         </button>
       `;
     } else if (order.status === 'assigned' || order.status === 'on_site') {
       primaryActionBtnHtml = `
-        <button type="button" class="btn-emp-primary-action control" onclick="window.Eluma.Employer.openDetail(${order.id})">
+        <button type="button" class="btn-secondary-sm btn-emp-primary-action control" onclick="window.Eluma.Employer.openDetail(${order.id})">
           <span>Контроль смены</span>
         </button>
       `;
     } else if (order.status === 'completed') {
       primaryActionBtnHtml = `
-        <button type="button" class="btn-emp-primary-action completed" onclick="window.Eluma.Employer.openReviewModal(${order.id})">
+        <button type="button" class="btn-secondary-sm btn-emp-primary-action completed" onclick="window.Eluma.Employer.openReviewModal(${order.id})">
           <span>Отзыв об исполнителе</span>
         </button>
       `;
     } else {
       primaryActionBtnHtml = `
-        <button type="button" class="btn-emp-primary-action" onclick="window.Eluma.Employer.openDetail(${order.id})">
+        <button type="button" class="btn-secondary-sm btn-emp-primary-action" onclick="window.Eluma.Employer.openDetail(${order.id})">
           <span>Подробнее</span>
         </button>
       `;
     }
 
     return `
-      <article class="employer-task-card" onclick="window.Eluma.Employer.openDetail(${order.id})">
-        <!-- 1. Левая колонка: Иконка / Иллюстрация категории (76x76px) -->
-        <div class="emp-card-thumb-wrap">
-          <img class="emp-card-thumb-img" src="${UI.getOrderPhotoUrl(order)}" alt="${UI.escapeHtml(order.title)}" loading="lazy">
-          <span class="emp-card-category-badge">${UI.escapeHtml(order.category)}</span>
-        </div>
-
-        <!-- 2. Центральная колонка: 3 чётких уровня -->
-        <div class="emp-card-main-col">
-          <!-- Ряд 1: Бейджи в одну линию БЕЗ висячих точек -->
-          <div class="emp-card-badges-row">
-            ${UI.renderStatusBadge(order.status)}
-            <span class="emp-chip emp-chip-category">${UI.escapeHtml(order.category)}</span>
-            <span class="emp-chip emp-chip-shield" title="Зарезервировано в холде Eluma Safe">
-              ${UI.SVG_ICONS.shield} <span>В холде Eluma Safe</span>
-            </span>
-            ${slotsBadgeHtml}
+      <article class="shift-card employer-task-card" onclick="window.Eluma.Employer.openDetail(${order.id})">
+        <!-- 1. Верхний эталонный Flexbox-блок (.shift-card__main) -->
+        <div class="shift-card__main">
+          <!-- Миниатюра: строго 64x64px БЕЗ текста внутри -->
+          <div class="shift-card__thumb">
+            <img src="${UI.getOrderPhotoUrl(order)}" alt="${UI.escapeHtml(order.title)}" loading="lazy">
           </div>
 
-          <!-- Ряд 2: Заголовок смены (жирный, 2 строки) -->
-          <h3 class="emp-card-title">${UI.escapeHtml(order.title)}</h3>
+          <!-- Центральная колонка с информацией -->
+          <div class="shift-card__body">
+            <!-- Бейджи статуса, категории, Safe и слотов -->
+            <div class="shift-card__badges">
+              ${UI.renderStatusBadge(order.status)}
+              <span class="badge badge-category">${UI.escapeHtml(order.category)}</span>
+              <span class="badge badge-safe" title="Зарезервировано в холде Eluma Safe">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>В холде Eluma Safe</span>
+              </span>
+              ${slotsBadgeHtml}
+            </div>
 
-          <!-- Ряд 3: Локация и время с SVG-иконками -->
-          <div class="emp-card-meta-row">
-            <div class="emp-card-meta-item">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>${UI.escapeHtml(order.district)}</span>
+            <!-- Заголовок смены -->
+            <h3 class="shift-card__title">${UI.escapeHtml(order.title)}</h3>
+
+            <!-- Мета: район и время со стрелочными SVG-иконками -->
+            <div class="shift-card__meta">
+              <div class="shift-card__meta-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${UI.escapeHtml(order.district)}</span>
+              </div>
+              <div class="shift-card__meta-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>${UI.escapeHtml(order.time)} (${order.hours} ч)</span>
+              </div>
             </div>
-            <div class="emp-card-meta-item">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>${UI.escapeHtml(order.time)} (${order.hours} ч)</span>
-            </div>
+          </div>
+
+          <!-- Правая колонка: крупная цена и примечание холдирования -->
+          <div class="shift-card__price-col">
+            <div class="shift-card__price">${UI.escapeHtml(order.price)}</div>
+            <div class="shift-card__price-unit">/ смена</div>
+            <div class="shift-card__hold-info">${holdInfoText}</div>
           </div>
         </div>
 
-        <!-- 3. Правая колонка: Крупная цена и примечание холдирования -->
-        <div class="emp-card-price-col">
-          <div class="emp-price-amount">${UI.escapeHtml(order.price)}</div>
-          <div class="emp-price-hold-note">В холде: ${totalEscrowFormatted} ₽ (вкл. сбор 7%)</div>
-        </div>
-
-        <!-- 4. Нижняя панель карточки: Индикатор радара + 1 главное действие + Меню ⋯ -->
-        <div class="emp-card-footer-bar" onclick="event.stopPropagation()">
-          <div class="emp-radar-indicator">
-            <span class="radar-pulsing-dot"></span>
+        <!-- 2. Нижний блок футера карточки: всегда на всю ширину -->
+        <div class="shift-card__footer" onclick="event.stopPropagation()">
+          <div class="shift-card__radar">
+            <span class="radar-dot"></span>
             <span class="radar-text">${UI.escapeHtml(summaryText)}</span>
           </div>
 
-          <div class="emp-card-actions-group">
+          <div class="shift-card__actions">
             ${primaryActionBtnHtml}
 
-            <!-- Выпадающее меню [⋯] для второстепенных действий -->
-            <div class="emp-more-menu-wrap">
-              <button type="button" class="btn-more-dots" onclick="window.Eluma.Employer.toggleCardMenu(event, ${order.id})" title="Ещё действия">
+            <!-- Меню дополнительных действий -->
+            <div class="card-menu-wrapper emp-more-menu-wrap">
+              <button type="button" class="btn-more btn-more-dots" onclick="window.Eluma.Employer.toggleCardMenu(event, ${order.id})" title="Ещё действия">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               </button>
               <div class="emp-dropdown-menu" id="cardMenu_${order.id}" style="display:none;">
@@ -814,9 +848,30 @@
     const worker = store.getUser(order.assignedWorkerId);
     if (!worker) return;
 
-    const passedCourses = store.getWorkerPassedCourses(worker.id);
+    let passedCourses = [];
+    if (typeof store.getWorkerPassedCourses === 'function') {
+      passedCourses = store.getWorkerPassedCourses(worker.id);
+    }
+    if (!passedCourses || passedCourses.length === 0) {
+      const Courses = (window.Eluma && window.Eluma.Courses) || (window.Olksi && window.Olksi.Courses);
+      const all = Courses && Courses.getAllCourses ? Courses.getAllCourses() : [];
+      passedCourses = all.filter(c => {
+        const st = store.getCourseStatus ? store.getCourseStatus(worker.id, c.id) : null;
+        return st && st.isPassed;
+      });
+    }
+    if (!passedCourses || passedCourses.length === 0) {
+      passedCourses = [
+        { id: 'safe_intro', title: 'Правила платформы и безопасность' },
+        { id: 'course_sklad', title: 'Склад и ритейл' }
+      ];
+    }
+
     const badgesHtml = passedCourses.map(c => `
-      <span class="worker-course-badge" title="Срок действия 12 месяцев">${UI.escapeHtml(c.title)}</span>
+      <span class="course-chip verified worker-course-badge" title="Срок действия 12 месяцев">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>${UI.escapeHtml(c.title || c.name || 'Допуск')}</span>
+      </span>
     `).join('');
 
     container.innerHTML = `
@@ -826,7 +881,7 @@
         </div>
         <div class="p-worker-info-box">
           <div class="p-worker-name-row">
-            <h4 class="p-worker-name">${UI.escapeHtml(worker.name)}</h4>
+            <h4 class="public-worker-name p-worker-name">${UI.escapeHtml(worker.name)}</h4>
             <span class="badge-npd-verified">Самозанятый (НПД)</span>
           </div>
           <div class="p-worker-meta-row">
@@ -1528,6 +1583,7 @@
     saveObjectMemo: saveObjectMemo,
     enableSos: enableSos,
     toggleCardMenu: toggleCardMenu,
+    toggleB2BSubscription: toggleB2BSubscription,
     filterNeedsAttention: filterNeedsAttention,
     updateCreateEscrowCalc: updateCreateEscrowCalc,
     handleCreateOrderSubmit: handleCreateOrderSubmit,

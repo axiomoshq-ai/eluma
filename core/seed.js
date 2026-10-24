@@ -72,6 +72,28 @@
           shifts: 11
         },
         {
+          id: 6,
+          role: 'worker',
+          name: 'Иван С.',
+          phone: '+7 (927) 300-44-55',
+          city: 'Самара',
+          createdAt: '01.06.2026',
+          specialization: 'Склад / Комплектовщик',
+          rating: 4.88,
+          shifts: 14
+        },
+        {
+          id: 7,
+          role: 'worker',
+          name: 'Павел Н.',
+          phone: '+7 (937) 400-66-77',
+          city: 'Самара',
+          createdAt: '20.05.2026',
+          specialization: 'Грузчик / Монтаж',
+          rating: 4.85,
+          shifts: 12
+        },
+        {
           id: 101,
           role: 'employer',
           type: 'business',
@@ -262,8 +284,12 @@
           perks: ['Рохля и тележки выдаются', 'Спецодежда на месте', 'Тёплый бокс'],
           status: 'searching',
           assignedWorkerId: null,
-          slotsTotal: 4,
+          slotsTotal: 3,
           assignedWorkerIds: [2],
+          applications: [
+            { workerId: 3, name: 'Максим Волков', rating: '4.94', status: 'ready', time: '10 мин назад' },
+            { workerId: 4, name: 'Артём Самойлов', rating: '4.91', status: 'ready', time: '25 мин назад' }
+          ],
           step: 0,
           proofs: { before: null, after: null, coords: null }
         },
@@ -376,12 +402,12 @@
           customerName: 'ООО «СтройСамара Логистика»',
           customerRating: '4.95',
           perks: ['Обучение ТСД на месте', 'Служебный транспорт от м. Победа', 'Обед в столовой'],
-          status: 'searching',
-          assignedWorkerId: null,
-          slotsTotal: 4,
-          assignedWorkerIds: [],
-          step: 0,
-          proofs: { before: null, after: null, coords: null }
+          status: 'on_site',
+          assignedWorkerId: 6,
+          slotsTotal: 2,
+          assignedWorkerIds: [6, 7],
+          step: 2,
+          proofs: { before: 'assets/sample_before.jpg', after: null, coords: '53.2384, 50.2189 (45 м от точки)' }
         },
 
         // 6. [103] Сеть ПВЗ и Ритейл «Самара Маркет» — Бизнес-смена (Курьер, 2 600 ₽)
@@ -550,12 +576,12 @@
           customerName: 'ООО «СтройСамара Логистика»',
           customerRating: '4.95',
           perks: ['Работа в паре', 'Спецодежда на объекте', 'Парковка'],
-          status: 'searching',
-          assignedWorkerId: null,
-          slotsTotal: 3,
-          assignedWorkerIds: [],
-          step: 0,
-          proofs: { before: null, after: null, coords: null }
+          status: 'in_review',
+          assignedWorkerId: 6,
+          slotsTotal: 2,
+          assignedWorkerIds: [6, 7],
+          step: 3,
+          proofs: { before: 'assets/sample_before.jpg', after: 'assets/sample_after.jpg', coords: '53.2089, 50.2541' }
         },
 
         // 12. [103] Сеть ПВЗ и Ритейл «Самара Маркет» — Бизнес-смена (Склад/Ритейл, 3 000 ₽)
@@ -637,12 +663,12 @@
           customerName: 'ООО «СтройСамара Логистика»',
           customerRating: '4.95',
           perks: ['Инвентарь на месте', 'Спецодежда', 'Официальный чек'],
-          status: 'searching',
-          assignedWorkerId: null,
+          status: 'completed',
+          assignedWorkerId: 6,
           slotsTotal: 2,
-          assignedWorkerIds: [],
-          step: 0,
-          proofs: { before: null, after: null, coords: null }
+          assignedWorkerIds: [6, 7],
+          step: 4,
+          proofs: { before: 'assets/sample_before.jpg', after: 'assets/sample_after.jpg', coords: '53.2289, 50.2241' }
         },
 
         // 15. [103] Сеть ПВЗ и Ритейл «Самара Маркет» — Бизнес-смена (ПВЗ, 2 900 ₽)
